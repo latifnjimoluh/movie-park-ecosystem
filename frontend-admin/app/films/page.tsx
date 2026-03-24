@@ -19,6 +19,7 @@ import {
   filmClassification,
   scheduleTitle,
   scheduleDescription,
+  resolveImageUrl,
   type DbFilm,
   type DbScheduleItem,
   FALLBACK_FILMS,
@@ -27,7 +28,7 @@ import {
 
 function toFilmDetailProps(film: DbFilm, lang: string) {
   return {
-    id: Number(film.id),
+    id: film.id,
     title: filmTitle(film, lang),
     genre: filmGenre(film, lang),
     country: filmCountry(film, lang),
@@ -35,7 +36,7 @@ function toFilmDetailProps(film: DbFilm, lang: string) {
     duration: film.duration ?? "",
     classification: filmClassification(film, lang),
     synopsys: filmSynopsis(film, lang),
-    poster: film.poster_url ?? "/placeholder.svg",
+    poster: resolveImageUrl(film),
     youtubeUrl: film.youtube_url ?? "#",
     screeningTime: film.screening_time ?? "",
   }

@@ -3,11 +3,11 @@
 import { useState } from "react"
 
 interface Film {
-  id: number
+  id: string | number
   title: string
   genre: string
   country: string
-  year: number
+  year: string | number
   duration: string
   classification: string
   synopsys: string
