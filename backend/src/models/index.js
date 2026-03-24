@@ -7,8 +7,10 @@ const env = process.env.NODE_ENV || "development"
 const dbConfig = config[env]
 
 let sequelize
-if (dbConfig.url || process.env.DATABASE_URL) {
-  sequelize = new Sequelize(dbConfig.url || process.env.DATABASE_URL, dbConfig)
+if (dbConfig.url) {
+  sequelize = new Sequelize(dbConfig.url, dbConfig)
+} else if (process.env.DATABASE_URL) {
+  sequelize = new Sequelize(process.env.DATABASE_URL, dbConfig)
 } else {
   sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
 }
