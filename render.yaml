@@ -1,6 +1,6 @@
 services:
   # ----------------------------------------------------------------------------
-  # 🟢 BACKEND SERVICE (Node.js)
+  # 🟢 BACKEND SERVICE (Node.js API)
   # ----------------------------------------------------------------------------
   - type: web
     name: movie-in-the-park-backend
@@ -10,6 +10,7 @@ services:
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /api/event-config/public
     envVars:
       - key: NODE_ENV
         value: production
@@ -24,7 +25,7 @@ services:
       - fromGroup: movie-common-secrets
 
   # ----------------------------------------------------------------------------
-  # 🔵 FRONTEND ADMIN (Next.js - Dashboard)
+  # 🔵 FRONTEND ADMIN (Next.js Dashboard)
   # ----------------------------------------------------------------------------
   - type: web
     name: movie-in-the-park-admin
@@ -32,14 +33,18 @@ services:
     region: frankfurt
     plan: free
     rootDir: frontend-user
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
+    buildCommand: npm install; npm run build
+    startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_API_HOST
         value: https://movie-in-the-park-backend.onrender.com/api
+      - key: NODE_VERSION
+        value: 20.10.0
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=2048
 
   # ----------------------------------------------------------------------------
-  # 🟠 FRONTEND PUBLIC (Next.js - Site Visiteur)
+  # 🟠 FRONTEND PUBLIC (Next.js Site)
   # ----------------------------------------------------------------------------
   - type: web
     name: movie-in-the-park-public
@@ -47,11 +52,15 @@ services:
     region: frankfurt
     plan: free
     rootDir: frontend-admin
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
+    buildCommand: npm install; npm run build
+    startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_API_URL
         value: https://movie-in-the-park-backend.onrender.com/api
+      - key: NODE_VERSION
+        value: 20.10.0
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=2048
 
 # ----------------------------------------------------------------------------
 # 🗄️ DATABASE (PostgreSQL)
@@ -60,6 +69,8 @@ databases:
   - name: movie-db
     plan: free
     region: frankfurt
+    databaseName: movie_stb2
+    user: movie_stb2_user
 
 # ----------------------------------------------------------------------------
 # 🔑 GROUPES DE SECRETS
@@ -77,3 +88,7 @@ envVarGroups:
         value: latifnjimoluh@gmail.com
       - key: ADMIN_NOTIFICATION_EMAIL_2
         value: matangabrooklyn@gmail.com
+      - key: EMAIL_PROVIDER
+        value: sendgrid
+      - key: EMAIL_FROM
+        value: "Movie In The Park <movieinthepark@cashbanqsystem.com>"
