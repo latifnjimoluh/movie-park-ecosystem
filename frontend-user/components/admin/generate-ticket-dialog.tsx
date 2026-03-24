@@ -230,7 +230,6 @@ export function GenerateTicketDialog({
                       src={`${BASE_URL}/tickets/${ticketData.id}/preview?token=${typeof window !== "undefined" ? localStorage.getItem("admin_token") : ""}#toolbar=0&navpanes=0&scrollbar=0`}
                       className="w-full h-full block"
                       title="Ticket Real Preview"
-                      type="application/pdf"
                     />
                   </div>
                 )}
