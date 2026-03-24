@@ -62,13 +62,18 @@ databases:
     region: frankfurt
 
 # ----------------------------------------------------------------------------
-# 🔑 GROUPES DE SECRETS (À remplir dans le dashboard Render)
+# 🔑 GROUPES DE SECRETS
 # ----------------------------------------------------------------------------
 envVarGroups:
   - name: movie-common-secrets
     envVars:
       - key: JWT_SECRET
+        value: replace_this_with_a_random_string_at_least_32_chars
       - key: QR_SECRET
+        value: replace_this_with_another_random_string
       - key: SENDGRID_API_KEY
+        value: SG.placeholder
       - key: ADMIN_NOTIFICATION_EMAIL
+        value: latifnjimoluh@gmail.com
       - key: ADMIN_NOTIFICATION_EMAIL_2
+        value: matangabrooklyn@gmail.com
