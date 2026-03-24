@@ -46,7 +46,7 @@ export default function Header() {
                 key={link.href}
                 href={link.href}
                 className={`text-sm transition-colors ${
-                  active ? "text-[#DC143C] font-bold" : "text-[#F8F8F8] hover:text-[#DC143C]"
+                  active ? "text-[#FACC15] font-bold" : "text-[#F8F8F8] hover:text-[#FACC15]"
                 }`}
               >
                 {t(link.key, language)}
@@ -61,7 +61,7 @@ export default function Header() {
           {/* Dark mode */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 hover:bg-white/10 rounded-lg transition text-white hover:text-[#DC143C]"
+            className="p-2 hover:bg-white/10 rounded-lg transition text-white hover:text-[#FACC15]"
           >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
@@ -71,7 +71,7 @@ export default function Header() {
             <button
               onClick={() => setLanguage("fr")}
               className={`px-3 py-1 rounded text-xs font-medium ${
-                language === "fr" ? "bg-[#A00000] text-white" : "text-[#CCCCCC] hover:text-white"
+                language === "fr" ? "bg-[#854D0E] text-white" : "text-[#CCCCCC] hover:text-white"
               }`}
             >
               FR
@@ -79,7 +79,7 @@ export default function Header() {
             <button
               onClick={() => setLanguage("en")}
               className={`px-3 py-1 rounded text-xs font-medium ${
-                language === "en" ? "bg-[#A00000] text-white" : "text-[#CCCCCC] hover:text-white"
+                language === "en" ? "bg-[#854D0E] text-white" : "text-[#CCCCCC] hover:text-white"
               }`}
             >
               EN
@@ -88,7 +88,7 @@ export default function Header() {
 
           {/* CTA */}
           <Link href="/reservation">
-            <button className="bg-[#8B0000] hover:bg-[#DC143C] text-white px-6 py-2 rounded-lg font-medium transition hover:scale-105 hover:shadow-lg hover:shadow-red-950/50 text-sm">
+            <button className="bg-[#CA8A04] hover:bg-[#FACC15] text-white px-6 py-2 rounded-lg font-medium transition hover:scale-105 hover:shadow-lg hover:shadow-yellow-900/50 text-sm">
               {t("common.reservation", language)}
             </button>
           </Link>
@@ -97,7 +97,7 @@ export default function Header() {
         {/* Mobile Menu Toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-white hover:text-[#DC143C] transition"
+          className="md:hidden text-white hover:text-[#FACC15] transition"
         >
           {isOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
@@ -115,7 +115,7 @@ export default function Header() {
                   href={link.href}
                   onClick={() => setIsOpen(false)}
                   className={`py-2 text-sm ${
-                    active ? "text-[#DC143C] font-bold" : "text-white hover:text-[#DC143C]"
+                    active ? "text-[#FACC15] font-bold" : "text-white hover:text-[#FACC15]"
                   }`}
                 >
                   {t(link.key, language)}
@@ -140,7 +140,7 @@ export default function Header() {
                     setIsOpen(false)
                   }}
                   className={`flex-1 px-3 py-2 rounded text-xs font-medium ${
-                    language === "fr" ? "bg-[#A00000] text-white" : "text-[#CCCCCC] hover:text-white"
+                    language === "fr" ? "bg-[#854D0E] text-white" : "text-[#CCCCCC] hover:text-white"
                   }`}
                 >
                   Français
@@ -152,7 +152,7 @@ export default function Header() {
                     setIsOpen(false)
                   }}
                   className={`flex-1 px-3 py-2 rounded text-xs font-medium ${
-                    language === "en" ? "bg-[#A00000] text-white" : "text-[#CCCCCC] hover:text-white"
+                    language === "en" ? "bg-[#854D0E] text-white" : "text-[#CCCCCC] hover:text-white"
                   }`}
                 >
                   English
@@ -161,7 +161,7 @@ export default function Header() {
 
               {/* CTA mobile */}
               <Link href="/reservation" onClick={() => setIsOpen(false)}>
-                <button className="w-full bg-[#8B0000] hover:bg-[#DC143C] text-white py-2 rounded-lg font-medium mt-2 text-sm">
+                <button className="w-full bg-[#CA8A04] hover:bg-[#FACC15] text-white py-2 rounded-lg font-medium mt-2 text-sm">
                   Réserver
                 </button>
               </Link>

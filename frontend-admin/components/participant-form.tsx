@@ -40,7 +40,9 @@ export default function ParticipantForm({
   const validatePhoneNumber = (value: string): string => {
     if (!isPayeur) return value // No phone validation for participants
     const onlyDigits = value.replace(/\D/g, "")
-    return onlyDigits.slice(0, 12)
+    // Strip leading 237 prefix if user typed it (we display the prefix separately)
+    const stripped = onlyDigits.startsWith("237") ? onlyDigits.slice(3) : onlyDigits
+    return stripped.slice(0, 9)
   }
 
   const addParticipant = () => {
@@ -69,21 +71,31 @@ export default function ParticipantForm({
 
   const getPhoneError = (phone: string): string | null => {
     if (!isPayeur) return null
-    if (phone && phone.length < 12) {
-      return `${t("reservationForm.phoneLabel", language)} - ${t("reservationForm.incompleteNumber", language)} (${phone.length}/12)`
+    if (phone && phone.length < 9) {
+      return `${t("reservationForm.phoneLabel", language)} - ${t("reservationForm.incompleteNumber", language)} (${phone.length}/9)`
     }
     return null
   }
+
+  // Progress bar for multi-person packs
+  const filledCount = participants.filter((p) => p.nom?.trim() && p.prenom?.trim()).length
+  const requiredCount = packNameLower === "couple" ? 1 : capacity - 1
 
   // -----------------------------
   // PACK COUPLE
   // -----------------------------
   if (packNameLower === "couple") {
     const p = participants[0] || {}
+    const coupleReady = !!(p.nom?.trim() && p.prenom?.trim())
 
     return (
       <div className="space-y-6">
-        <p className="text-[#cccccc] text-sm md:text-base">{t("participantForm.coupleTitle", language)}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-[#cccccc] text-sm md:text-base">{t("participantForm.coupleTitle", language)}</p>
+          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${coupleReady ? "bg-[#854D0E]/20 text-[#FACC15]" : "bg-[#333] text-[#666]"}`}>
+            {coupleReady ? "1/1 ✓" : "0/1"}
+          </span>
+        </div>
 
         <div className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
@@ -138,24 +150,31 @@ export default function ParticipantForm({
             {/* Phone */}
             <div>
               <label className="block text-[#f8f8f8] font-semibold mb-2 text-xs md:text-base">
-                {t("reservationForm.phoneLabel", language)} {isPayeur && "*"}{" "}
-                <span className="text-[#999999] text-xs font-normal">ex: 672475691</span>
+                {t("reservationForm.phoneLabel", language)} {isPayeur && "*"}
               </label>
-              <input
-                type="tel"
-                inputMode="numeric"
-                value={p.telephone || ""}
-                maxLength={isPayeur ? 12 : undefined}
-                placeholder="672475691"
-                onChange={(e) => updateParticipant(0, "telephone", e.target.value)}
-                className={`w-full px-4 py-3 bg-[#121212] border rounded-lg text-[#f8f8f8]
-                  ${getPhoneError(p.telephone || "") ? "border-[#dc143c]" : "border-[#333]"}`}
-                required={isPayeur}
-              />
+              <div className="flex">
+                {isPayeur && (
+                  <span className="flex items-center px-3 py-3 bg-[#1a1a1a] border border-r-0 border-[#333] rounded-l-lg text-[#999999] text-sm font-mono select-none">
+                    +237
+                  </span>
+                )}
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={p.telephone || ""}
+                  maxLength={9}
+                  placeholder="6XXXXXXXX"
+                  onChange={(e) => updateParticipant(0, "telephone", e.target.value)}
+                  className={`flex-1 px-4 py-3 bg-[#121212] border rounded-lg text-[#f8f8f8]
+                    ${isPayeur ? "rounded-l-none" : ""}
+                    ${getPhoneError(p.telephone || "") ? "border-[#FACC15]" : "border-[#333]"}`}
+                  required={isPayeur}
+                />
+              </div>
               {getPhoneError(p.telephone || "") && (
-                <p className="text-[#dc143c] text-xs mt-2">{getPhoneError(p.telephone || "")}</p>
+                <p className="text-[#FACC15] text-xs mt-2">{getPhoneError(p.telephone || "")}</p>
               )}
-              {isPayeur && <p className="text-[#666666] text-xs mt-1">{(p.telephone || "").length}/12 chiffres</p>}
+              {isPayeur && <p className="text-[#666666] text-xs mt-1">{(p.telephone || "").length}/9 chiffres</p>}
             </div>
           </div>
         </div>
@@ -168,11 +187,25 @@ export default function ParticipantForm({
   // -------------------------------------
   return (
     <div className="space-y-6">
-      <p className="text-[#cccccc] text-sm md:text-base">
-        {t("participantForm.dynamicTitle", language)
-          .replace("{{current}}", participants.length.toString())
-          .replace("{{max}}", (capacity - 1).toString())}
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-[#cccccc] text-sm md:text-base">
+          {t("participantForm.dynamicTitle", language)
+            .replace("{{current}}", participants.length.toString())
+            .replace("{{max}}", (capacity - 1).toString())}
+        </p>
+        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${filledCount === requiredCount && requiredCount > 0 ? "bg-[#854D0E]/20 text-[#FACC15]" : "bg-[#333] text-[#666]"}`}>
+          {filledCount}/{requiredCount} renseignés
+        </span>
+      </div>
+      {/* Progress bar */}
+      {requiredCount > 0 && (
+        <div className="h-1 w-full bg-[#333] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[#FACC15] rounded-full transition-all duration-300"
+            style={{ width: `${Math.min((filledCount / requiredCount) * 100, 100)}%` }}
+          />
+        </div>
+      )}
 
       <div className="space-y-4">
         {participants.map((p, index) => (
@@ -243,7 +276,7 @@ export default function ParticipantForm({
 
             <button
               onClick={() => removeParticipant(index)}
-              className="p-2 hover:bg-[#1a1a1a] rounded-lg text-[#a00000] mt-6"
+              className="p-2 hover:bg-[#1a1a1a] rounded-lg text-[#854D0E] mt-6"
             >
               <Trash2 className="w-5 h-5" />
             </button>
@@ -254,7 +287,7 @@ export default function ParticipantForm({
       {participants.length < capacity - 1 && (
         <button
           onClick={addParticipant}
-          className="w-full px-6 py-3 border border-[#a00000] text-[#a00000] rounded-lg font-semibold hover:bg-[#a00000]/10"
+          className="w-full px-6 py-3 border border-[#854D0E] text-[#854D0E] rounded-lg font-semibold hover:bg-[#854D0E]/10"
         >
           {t("participantForm.addParticipant", language)
             .replace("{{current}}", (participants.length + 1).toString())

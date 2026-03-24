@@ -16,12 +16,12 @@ export default function Schedule({ items }: { items: ScheduleItem[] }) {
             <div className="flex items-start gap-4 flex-1">
               {/* Time */}
               <div className="flex-shrink-0">
-                <div className="text-2xl font-bold text-[#dc143c] min-w-24">{item.time}</div>
+                <div className="text-2xl font-bold text-[#FACC15] min-w-24">{item.time}</div>
               </div>
 
               {/* Vertical line and dot */}
               <div className="flex flex-col items-center -ml-2">
-                <div className="w-4 h-4 bg-[#a00000] rounded-full mt-2 group-hover:bg-[#dc143c] transition-colors" />
+                <div className="w-4 h-4 bg-[#854D0E] rounded-full mt-2 group-hover:bg-[#FACC15] transition-colors" />
                 {index !== items.length - 1 && (
                   <div className="w-1 bg-[#333333] flex-grow my-4 group-hover:bg-[#666666] transition-colors" />
                 )}

@@ -174,7 +174,7 @@ router.post("/public", validate(createReservationSchema), preventDuplicateReques
     logger.info(`✅ Transaction committed for reservation ${reservation.id}`)
 
     await auditService.log({
-      userId: "02ae193b-0f63-42df-b039-d984998f0d2a", // Fixed system user ID
+      userId: null, // Réservation publique — aucun utilisateur connecté
       permission: "public.reservation.create",
       entityType: "reservation",
       entityId: reservation.id,
@@ -234,6 +234,112 @@ router.post("/public", validate(createReservationSchema), preventDuplicateReques
       message: "Error creating reservation",
     })
   }
+})
+
+/* ============================================================
+   📌 PUBLIC TRACKING — by phone (no auth required)
+============================================================ */
+router.get("/track", async (req, res) => {
+  const { phone } = req.query
+  if (!phone) {
+    return res.status(400).json({ status: 400, message: "phone query parameter is required" })
+  }
+
+  const { Op } = require("sequelize")
+  const { Ticket } = require("../models")
+
+  const rows = await Reservation.findAll({
+    where: {
+      [Op.or]: [
+        { payeur_phone: { [Op.iLike]: `%${phone}%` } },
+        { payeur_phone: { [Op.iLike]: `%${phone.replace(/^\+?237/, "")}%` } },
+      ],
+    },
+    include: [
+      { association: "pack", attributes: ["name"] },
+      { association: "payments", attributes: ["amount", "method", "createdAt"] },
+      {
+        association: "tickets",
+        attributes: ["id", "ticket_number", "status", "qr_image_url", "generated_at"],
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+    limit: 20,
+  })
+
+  const data = rows.map((r) => ({
+    id: r.id,
+    status: r.status,
+    pack: r.pack_name_snapshot,
+    total_price: r.total_price,
+    total_paid: r.total_paid,
+    remaining: r.total_price - r.total_paid,
+    nom: r.payeur_name,
+    createdAt: r.createdAt,
+    tickets: r.tickets || [],
+    payments: r.payments || [],
+  }))
+
+  res.json({ status: 200, message: "OK", data })
+})
+
+/* ============================================================
+   📌 EXPORT CSV
+============================================================ */
+router.get("/export", verifyToken, checkPermission("reservations.view"), async (req, res) => {
+  const { status, from, to } = req.query
+  let where = {}
+  const { Op } = require("sequelize")
+
+  if (status) where.status = status
+  if (from || to) {
+    where.createdAt = {}
+    if (from) where.createdAt[Op.gte] = new Date(from)
+    if (to) where.createdAt[Op.lte] = new Date(to)
+  }
+
+  const rows = await Reservation.findAll({
+    where,
+    include: [
+      { association: "pack", attributes: ["name"] },
+      { association: "payments", attributes: ["amount", "method"] },
+    ],
+    order: [["createdAt", "DESC"]],
+  })
+
+  const escape = (val) => {
+    if (val == null) return ""
+    const str = String(val)
+    if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+      return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+  }
+
+  const headers = ["ID", "Payeur", "Téléphone", "Email", "Pack", "Quantité", "Prix total", "Total payé", "Reste", "Statut", "Date"]
+  const csvRows = [headers.join(",")]
+
+  for (const r of rows) {
+    const totalPaid = r.payments?.reduce((s, p) => s + p.amount, 0) || 0
+    csvRows.push([
+      escape(r.id),
+      escape(r.payeur_name),
+      escape(r.payeur_phone),
+      escape(r.payeur_email),
+      escape(r.pack_name_snapshot),
+      escape(r.quantity),
+      escape(r.total_price),
+      escape(totalPaid),
+      escape(r.total_price - totalPaid),
+      escape(r.status),
+      escape(new Date(r.createdAt).toLocaleDateString("fr-FR")),
+    ].join(","))
+  }
+
+  const csv = csvRows.join("\n")
+  res.setHeader("Content-Type", "text/csv; charset=utf-8")
+  res.setHeader("Content-Disposition", `attachment; filename="reservations_${new Date().toISOString().split("T")[0]}.csv"`)
+  res.send("\uFEFF" + csv) // UTF-8 BOM for Excel
 })
 
 /* ============================================================

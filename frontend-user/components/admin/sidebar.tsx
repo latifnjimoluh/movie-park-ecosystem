@@ -11,6 +11,7 @@
     Users,
     QrCode,
     Package,
+    ShieldCheck,
     X,
   } from "lucide-react"
 
@@ -32,6 +33,7 @@
       { href: "/admin/scan", label: "Contrôle d'entrée", icon: QrCode },
       { href: "/admin/packs", label: "Packs", icon: Package },
       { href: "/admin/users", label: "Utilisateurs", icon: Users },
+      { href: "/admin/audit", label: "Journal d'audit", icon: ShieldCheck },
       { href: "/admin/settings", label: "Paramètres", icon: Settings },
     ]
 

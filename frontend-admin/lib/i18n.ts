@@ -98,12 +98,13 @@ export const translations = {
       title: "Movie in the Park",
       tagline: "Cinéma en plein air sous les étoiles",
       dateLabel: "Date",
-      dateValue: "Samedi 20 Décembre 2025",
+      dateValue: "Dimanche 12 Avril 2026",
       locationLabel: "Lieu",
       locationValue: "Mini Prix Bastos",
       timeLabel: "Horaire",
       timeValue: "Ouverture 13h00",
-      advice: "🧥 Conseil : Apportez un pull, une couverture et des chaussettes - les soirées peuvent être fraîches !",
+      advice: "🥚 Conseil : Préparez-vous pour une chasse aux œufs cinématographique unique !",
+
       ctaFilms: "Voir les films",
       ctaReservation: "Réserver ma place",
     },
@@ -438,11 +439,11 @@ export const translations = {
         title: "C'est quoi Movie in the Park ?",
         p1: "Movie in the Park est un événement de cinéma en plein air à Yaoundé. Une expérience unique sous les étoiles, mêlant films grand écran, concerts live, activités ludiques, jeux, zones photo, repas et boissons dans une ambiance conviviale et festive.",
         p2: "Chaque édition réunit des familles, des amis, des couples et des passionnés de cinéma. Le but : offrir une soirée inoubliable où vous regardez un film, vous mangez, vous dansez, vous jouez, vous prenez des photos et vous profitez.",
-        nextEditionTitle: "📅 Prochaine édition : Décembre 2025 — Yaoundé",
-        nextEditionSubtitle: "Ne manquez pas cette édition exceptionnelle !",
-        clothingTitle: "🧥 Recommandation vestimentaire",
+        nextEditionTitle: "📅 Prochaine édition : Avril 2026 — Yaoundé",
+        nextEditionSubtitle: "Ne manquez pas cette édition printanière exceptionnelle !",
+        clothingTitle: "🌸 Recommandation printanière",
         clothingText:
-          "Il est fortement conseillé de venir avec un pull, une couverture, et des chaussettes, car les soirées peuvent être fraîches. Pensez à votre confort !",
+          "Prévoyez une tenue légère pour la journée et une petite veste pour la soirée sous les étoiles. Vivez Pâques en plein air !",
       },
 
       // Vision et valeurs

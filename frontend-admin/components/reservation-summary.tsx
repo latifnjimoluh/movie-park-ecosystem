@@ -66,18 +66,18 @@ export default function ReservationSummary({
 
           <div className="flex justify-between">
             <span className="text-[#cccccc]">{t("reservationSummary.priceLabel", language)}</span>
-            <span className="font-bold text-[#dc143c]">
+            <span className="font-bold text-[#FACC15]">
               {packData.price.toLocaleString(language === "fr" ? "fr-FR" : "en-US")} XAF
             </span>
           </div>
 
           {/* Capacity information */}
           {!isStandPack && (
-            <div className="flex justify-between items-center bg-[#a00000]/10 p-4 rounded border border-[#a00000]/50">
+            <div className="flex justify-between items-center bg-[#854D0E]/10 p-4 rounded border border-[#854D0E]/50">
               <span className="text-[#f8f8f8] text-sm">
                 Capacité du pack : {totalCapacity} personnes
               </span>
-              <span className="text-[#a00000] font-bold text-lg">
+              <span className="text-[#854D0E] font-bold text-lg">
                 {peopleCount} / {totalCapacity}
               </span>
             </div>
@@ -123,25 +123,25 @@ export default function ReservationSummary({
         </div>
 
         {/* TOTAL */}
-        <div className="bg-[#a00000]/10 border border-[#a00000]/50 rounded-lg p-6 mb-8">
+        <div className="bg-[#854D0E]/10 border border-[#854D0E]/50 rounded-lg p-6 mb-8">
           <div className="flex justify-between items-center">
             <span className="text-lg font-bold text-[#f8f8f8]">
               {t("reservationSummary.totalToPay", language)}
             </span>
 
-            <span className="text-3xl font-bold text-[#dc143c]">
+            <span className="text-3xl font-bold text-[#FACC15]">
               {totalPrice.toLocaleString(language === "fr" ? "fr-FR" : "en-US")} XAF
             </span>
           </div>
         </div>
         {/* BLOC D'ERREURS */}
         {Object.keys(errors).length > 0 && (
-          <div className="p-4 bg-[#a00000]/10 border border-[#a00000] rounded-lg space-y-2 mb-6">
+          <div className="p-4 bg-[#854D0E]/10 border border-[#854D0E] rounded-lg space-y-2 mb-6">
             <p className="text-[#f8f8f8] font-semibold mb-2">
               {language === "fr" ? "Veuillez remplir les champs suivants :" : "Please fill in the following fields:"}
             </p>
             {Object.entries(errors).map(([key, message]) => (
-              <p key={key} className="text-[#dc143c] text-sm font-medium">
+              <p key={key} className="text-[#FACC15] text-sm font-medium">
                 • {message}
               </p>
             ))}
@@ -153,7 +153,7 @@ export default function ReservationSummary({
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className="w-full bg-[#a00000] hover:bg-[#cc0000] disabled:bg-[#666] disabled:cursor-not-allowed text-white py-4 rounded-lg font-semibold transition-colors text-lg flex items-center justify-center gap-2"
+            className="w-full bg-[#854D0E] hover:bg-[#cc0000] disabled:bg-[#666] disabled:cursor-not-allowed text-white py-4 rounded-lg font-semibold transition-colors text-lg flex items-center justify-center gap-2"
           >
             {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
             {isLoading

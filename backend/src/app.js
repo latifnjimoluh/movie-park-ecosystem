@@ -3,6 +3,7 @@ require("dotenv").config()
 const express = require("express")
 const cors = require("cors")
 const helmet = require("helmet")
+const cookieParser = require("cookie-parser")
 const path = require("path")
 const cron = require("node-cron")
 
@@ -73,7 +74,7 @@ app.use(
     ].filter(Boolean),
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
     exposedHeaders: [
       "Content-Disposition",
       "Content-Type",
@@ -83,10 +84,11 @@ app.use(
 )
 
 // ============================================
-// BODY PARSER
+// BODY PARSER + COOKIE PARSER
 // ============================================
 app.use(express.json({ limit: "10mb" }))
 app.use(express.urlencoded({ limit: "10mb", extended: true }))
+app.use(cookieParser())
 
 // ============================================
 // STATIC FILES

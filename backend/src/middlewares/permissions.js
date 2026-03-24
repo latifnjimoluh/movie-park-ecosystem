@@ -115,6 +115,8 @@ const ROLE_PERMISSIONS = {
     "users.create",
     "users.edit",
 
+    "audit.view.all",
+    "audit.view.user",
     "audit.view.entity",
   ],
 

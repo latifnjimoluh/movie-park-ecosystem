@@ -2,7 +2,7 @@ const express = require("express")
 const bcryptjs = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const { User } = require("../models")
-const { verifyRefreshToken } = require("../middlewares/auth")
+const { verifyToken, verifyRefreshToken, COOKIE_OPTS } = require("../middlewares/auth")
 const { validate, loginSchema } = require("../middlewares/validation")
 
 const router = express.Router()
@@ -87,6 +87,10 @@ router.post("/login", validate(loginSchema), async (req, res) => {
     { expiresIn: process.env.JWT_REFRESH_EXPIRE || "7d" }
   )
 
+  // Cookies httpOnly — tokens invisibles au JS (protection XSS)
+  res.cookie("access_token", token, { ...COOKIE_OPTS, maxAge: 24 * 60 * 60 * 1000 })
+  res.cookie("refresh_token", refreshToken, { ...COOKIE_OPTS, maxAge: 30 * 24 * 60 * 60 * 1000 })
+
   res.json({
     status: 200,
     message: "Login successful",
@@ -119,6 +123,8 @@ router.post("/refresh", verifyRefreshToken, async (req, res) => {
     expiresIn: process.env.JWT_EXPIRE || "24h",
   })
 
+  res.cookie("access_token", token, { ...COOKIE_OPTS, maxAge: 24 * 60 * 60 * 1000 })
+
   res.json({
     status: 200,
     message: "Token refreshed",
@@ -126,12 +132,20 @@ router.post("/refresh", verifyRefreshToken, async (req, res) => {
   })
 })
 
+// ---------------------- ME ----------------------
+router.get("/me", verifyToken, async (req, res) => {
+  const user = await User.findByPk(req.user.id, {
+    attributes: ["id", "email", "name", "role"],
+  })
+  if (!user) return res.status(401).json({ status: 401, message: "User not found" })
+  res.json({ status: 200, message: "Authenticated", data: { user } })
+})
+
 // ---------------------- LOGOUT ----------------------
 router.post("/logout", (req, res) => {
-  res.json({
-    status: 200,
-    message: "Logout successful",
-  })
+  res.clearCookie("access_token", COOKIE_OPTS)
+  res.clearCookie("refresh_token", COOKIE_OPTS)
+  res.json({ status: 200, message: "Logout successful" })
 })
 
 module.exports = router

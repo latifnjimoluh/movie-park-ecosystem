@@ -39,7 +39,7 @@ export default function Activities() {
       {activities.map((activity, index) => (
         <div
           key={index}
-          className="bg-[#121212] rounded-lg p-8 hover:bg-[#1a1a1a] transition-all duration-300 hover:shadow-lg hover:shadow-[#a00000]/20"
+          className="bg-[#121212] rounded-lg p-8 hover:bg-[#1a1a1a] transition-all duration-300 hover:shadow-lg hover:shadow-[#854D0E]/20"
         >
           <div className="text-5xl mb-4">{activity.icon}</div>
           <h4 className="text-xl font-bold text-[#f8f8f8] mb-3">{activity.title}</h4>

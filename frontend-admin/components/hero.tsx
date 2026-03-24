@@ -4,169 +4,232 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useTheme } from "@/lib/theme-context"
 import { t } from "@/lib/i18n"
+import { MapPin, Calendar, Clock } from "lucide-react"
+
+const PARTICLE_SYMBOLS = ["🌸", "🌼", "🌿", "🌺", "🥚", "✨", "🌱", "🐣"]
+
+type Particle = {
+  symbol: string
+  left: string
+  top: string
+  size: number
+  duration: number
+  delay: number
+  opacity: number
+}
 
 export default function Hero() {
-  const [animateElements, setAnimateElements] = useState(false)
-  const [stars, setStars] = useState<{ width: number; height: number; left: string; top: string; duration: number }[]>(
-    [],
-  )
-
+  const [particles, setParticles] = useState<Particle[]>([])
   const { language } = useTheme()
 
   useEffect(() => {
-    setAnimateElements(true)
-
-    const generatedStars = Array.from({ length: 50 }).map(() => ({
-      width: Math.random() * 3 + 1,
-      height: Math.random() * 3 + 1,
+    const generated: Particle[] = Array.from({ length: 40 }).map(() => ({
+      symbol: PARTICLE_SYMBOLS[Math.floor(Math.random() * PARTICLE_SYMBOLS.length)],
       left: Math.random() * 100 + "%",
       top: Math.random() * 100 + "%",
-      duration: Math.random() * 3 + 2,
+      size: Math.random() * 14 + 10,
+      duration: Math.random() * 10 + 7,
+      delay: Math.random() * 6,
+      opacity: Math.random() * 0.35 + 0.1,
     }))
-
-    setStars(generatedStars)
+    setParticles(generated)
   }, [])
 
   return (
-    <section className="relative w-full bg-[#0A0A0A] overflow-hidden pt-24 pb-12 md:pt-28 md:pb-16 flex flex-col justify-center">
-      {/* Radial background */}
-      <div className="absolute inset-0 bg-gradient-radial from-[#DC143C]/20 via-transparent to-[#0A0A0A] pointer-events-none" />
+    <section
+      className="relative w-full overflow-hidden pt-24 pb-16 md:pt-32 md:pb-20 flex flex-col justify-center"
+      style={{ background: "#080810", minHeight: "88vh" }}
+    >
+      {/* Deep radial gradient */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 90% 65% at 50% 15%, rgba(250,204,21,0.13) 0%, rgba(202,138,4,0.05) 45%, transparent 68%), radial-gradient(ellipse 55% 45% at 15% 85%, rgba(16,185,129,0.07) 0%, transparent 55%)",
+        }}
+      />
 
-      {/* Stars (client only → safe) */}
-      <div className="absolute inset-0 pointer-events-none">
-        {stars.map((star, i) => (
-          <div
+      {/* Dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(250,204,21,0.18) 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
+          opacity: 0.06,
+        }}
+      />
+
+      {/* Easter particles (client only) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {particles.map((p, i) => (
+          <span
             key={i}
-            className="absolute rounded-full bg-white opacity-60"
+            className="absolute select-none animate-particle-float"
             style={{
-              width: `${star.width}px`,
-              height: `${star.height}px`,
-              left: star.left,
-              top: star.top,
-              animationName: "twinkle",
-              animationDuration: `${star.duration}s`,
-              animationIterationCount: "infinite",
-              animationTimingFunction: "ease-in-out",
+              left: p.left,
+              top: p.top,
+              fontSize: `${p.size}px`,
+              opacity: p.opacity,
+              animationDuration: `${p.duration}s`,
+              animationDelay: `${p.delay}s`,
             }}
-          />
+          >
+            {p.symbol}
+          </span>
         ))}
       </div>
 
-      <style>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
-        }
-      `}</style>
+      {/* Main content — CSS animations, visible on SSR */}
+      <div className="relative flex flex-col items-center justify-center px-4 md:px-6 py-8 md:py-12 z-10">
 
-      {/* Content */}
-      <div className="relative flex flex-col items-center justify-center px-4 md:px-6 py-8 md:py-12">
+        {/* Edition badge */}
+        <div className="mb-5 animate-fade-in-up" style={{ animationDelay: "0.05s" }}>
+          <span
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase backdrop-blur-sm"
+            style={{
+              border: "1px solid rgba(250,204,21,0.4)",
+              background: "rgba(250,204,21,0.1)",
+              color: "#FACC15",
+            }}
+          >
+            🐣 Édition Pâques 2026
+          </span>
+        </div>
+
         {/* Logo */}
-        <div
-          className={`mb-6 md:mb-8 transition-all duration-1200 ${
-            animateElements ? "opacity-100 scale-100" : "opacity-0 scale-95"
-          }`}
-          style={{ transitionDelay: "0.1s" }}
-        >
-          <div className="w-24 h-24 md:w-40 md:h-40 rounded-full overflow-hidden shadow-2xl shadow-red-950/50">
-            <img src="/apple-icon.png" alt="Logo Movie in the Park" className="w-full h-full object-cover" />
+        <div className="mb-7 md:mb-9 animate-scale-in" style={{ animationDelay: "0.12s" }}>
+          <div
+            className="w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden"
+            style={{
+              boxShadow:
+                "0 0 0 1px rgba(250,204,21,0.3), 0 0 30px rgba(250,204,21,0.25), 0 0 70px rgba(250,204,21,0.08)",
+            }}
+          >
+            <img
+              src="/apple-icon.png"
+              alt="Logo Movie in the Park"
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
 
-        {/* Title */}
+        {/* Title with gold gradient */}
         <h1
-          className={`text-3xl md:text-7xl font-black text-white text-center uppercase tracking-widest mb-3 md:mb-4 transition-all duration-1200 ${
-            animateElements ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-          style={{ transitionDelay: "0.3s" }}
+          className="text-4xl md:text-7xl font-black text-center uppercase tracking-widest mb-3 md:mb-4 animate-fade-in-up"
+          style={{
+            animationDelay: "0.3s",
+            background: "linear-gradient(135deg, #FDE68A 0%, #FACC15 30%, #CA8A04 65%, #FACC15 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}
         >
           {t("hero.title", language)}
         </h1>
 
-        {/* Tagline - Court et accrocheur */}
+        {/* Tagline */}
         <p
-          className={`text-lg md:text-2xl text-[#F5F5F5] text-center font-light opacity-90 mb-6 md:mb-8 transition-all duration-1200 ${
-            animateElements ? "opacity-90 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-          style={{ transitionDelay: "0.6s" }}
+          className="text-lg md:text-2xl text-center font-light mb-3 animate-fade-in-up"
+          style={{ animationDelay: "0.5s", color: "#F0F0E8" }}
         >
           Une soirée cinéma unique, sous les étoiles de Yaoundé.
         </p>
 
-        {/* Sous-slogan émotionnel */}
         <p
-          className={`text-sm md:text-base text-[#CCCCCC] text-center opacity-75 mb-6 md:mb-10 transition-all duration-1200 italic ${
-            animateElements ? "opacity-75 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-          style={{ transitionDelay: "0.7s" }}
+          className="text-sm md:text-base text-center mb-10 md:mb-14 italic animate-fade-in-up"
+          style={{ animationDelay: "0.6s", color: "rgba(250,204,21,0.65)" }}
         >
-          Ambiance. Films. Expérience.
+          Ambiance · Films · Expérience Printanière
         </p>
 
-        {/* Key Info - Date/Lieu/Horaire */}
+        {/* Glassmorphism info card */}
         <div
-          className={`bg-black/60 border border-[#DC143C]/30 rounded-xl px-6 md:px-12 py-5 md:py-6 mb-6 md:mb-8 flex flex-col md:flex-row items-center gap-4 md:gap-12 transition-all duration-1200 max-w-4xl ${
-            animateElements ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-          style={{ transitionDelay: "0.9s" }}
+          className="relative rounded-2xl px-6 md:px-12 py-5 md:py-7 mb-9 md:mb-11 flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full max-w-3xl backdrop-blur-md animate-fade-in-up"
+          style={{
+            animationDelay: "0.8s",
+            background: "rgba(250,204,21,0.05)",
+            border: "1px solid rgba(250,204,21,0.22)",
+            boxShadow: "0 8px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(250,204,21,0.1)",
+          }}
         >
-          <div className="flex items-center gap-2 text-center md:text-left">
-            <span className="text-xl md:text-2xl text-[#DC143C]">📅</span>
+          <div className="flex items-center gap-3 text-center md:text-left">
+            <Calendar size={19} className="flex-shrink-0" style={{ color: "#FACC15" }} />
             <div>
-              <p className="text-xs md:text-sm text-[#CCCCCC]">{t("hero.dateLabel", language)}</p>
-              <p className="text-white font-semibold text-sm md:text-base">{t("hero.dateValue", language)}</p>
+              <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "rgba(250,204,21,0.55)" }}>
+                {t("hero.dateLabel", language)}
+              </p>
+              <p className="text-white font-semibold text-sm md:text-base">
+                {t("hero.dateValue", language)}
+              </p>
             </div>
           </div>
+
+          <div className="hidden md:block w-px h-10 flex-shrink-0" style={{ background: "rgba(250,204,21,0.18)" }} />
 
           <a
             href="https://www.google.com/maps/dir/?api=1&destination=3.876146,11.518691"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-center md:text-left hover:text-[#DC143C] transition-colors cursor-pointer"
+            className="flex items-center gap-3 text-center md:text-left transition-colors group"
           >
-            <span className="text-xl md:text-2xl text-[#DC143C]">📍</span>
+            <MapPin size={19} className="flex-shrink-0" style={{ color: "#FACC15" }} />
             <div>
-              <p className="text-xs md:text-sm text-[#CCCCCC]">{t("hero.locationLabel", language)}</p>
-              <p className="text-white font-semibold text-sm md:text-base underline">
+              <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "rgba(250,204,21,0.55)" }}>
+                {t("hero.locationLabel", language)}
+              </p>
+              <p className="text-white font-semibold text-sm md:text-base underline underline-offset-2 group-hover:text-[#FACC15] transition-colors">
                 {t("hero.locationValue", language)}
               </p>
             </div>
           </a>
 
-          <div className="flex items-center gap-2 text-center md:text-left">
-            <span className="text-xl md:text-2xl text-[#DC143C]">🕕</span>
+          <div className="hidden md:block w-px h-10 flex-shrink-0" style={{ background: "rgba(250,204,21,0.18)" }} />
+
+          <div className="flex items-center gap-3 text-center md:text-left">
+            <Clock size={19} className="flex-shrink-0" style={{ color: "#FACC15" }} />
             <div>
-              <p className="text-xs md:text-sm text-[#CCCCCC]">{t("hero.timeLabel", language)}</p>
-              <p className="text-white font-semibold text-sm md:text-base">{t("hero.timeValue", language)}</p>
+              <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "rgba(250,204,21,0.55)" }}>
+                {t("hero.timeLabel", language)}
+              </p>
+              <p className="text-white font-semibold text-sm md:text-base">
+                {t("hero.timeValue", language)}
+              </p>
             </div>
           </div>
         </div>
 
         {/* CTA Buttons */}
         <div
-          className={`flex flex-col md:flex-row gap-4 md:gap-6 mb-6 md:mb-8 transition-all duration-1200 w-full md:w-auto md:justify-center ${
-            animateElements ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-          style={{ transitionDelay: "1.2s" }}
+          className="flex flex-col md:flex-row gap-4 md:gap-5 mb-9 w-full max-w-xs md:max-w-none md:justify-center animate-fade-in-up"
+          style={{ animationDelay: "1.0s" }}
         >
           <Link href="/films" className="flex-1 md:flex-none">
-            <button className="w-full border-2 border-white text-white px-6 md:px-12 py-3 md:py-4 rounded-lg font-medium hover:bg-white hover:text-black transition-all text-sm md:text-base">
+            <button
+              className="w-full px-8 md:px-12 py-3.5 md:py-4 rounded-xl font-medium transition-all text-sm md:text-base backdrop-blur-sm hover:bg-white/10"
+              style={{ border: "1px solid rgba(255,255,255,0.25)", color: "rgba(255,255,255,0.9)" }}
+            >
               {t("hero.ctaFilms", language)}
             </button>
           </Link>
 
           <Link href="/reservation" className="flex-1 md:flex-none">
-            <button className="w-full bg-[#8B0000] hover:bg-[#DC143C] text-white px-6 md:px-12 py-3 md:py-4 rounded-lg font-bold hover:scale-105 transition-all shadow-lg shadow-red-950/50 text-sm md:text-base">
+            <button
+              className="w-full px-8 md:px-12 py-3.5 md:py-4 rounded-xl font-bold transition-all text-sm md:text-base hover:scale-105"
+              style={{
+                background: "linear-gradient(135deg, #FACC15 0%, #CA8A04 100%)",
+                color: "#080810",
+                boxShadow: "0 4px 20px rgba(250,204,21,0.4), 0 1px 0 rgba(255,255,255,0.25) inset",
+              }}
+            >
               {t("hero.ctaReservation", language)}
             </button>
           </Link>
         </div>
 
+        {/* Social proof */}
         <p
-          className={`text-center text-sm md:text-base text-[#CCCCCC] transition-all duration-1200 ${
-            animateElements ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-          style={{ transitionDelay: "1.3s" }}
+          className="text-center text-sm animate-fade-in-up"
+          style={{ animationDelay: "1.1s", color: "#CCCCBB" }}
         >
           🎟️ Plus de 100 participants lors de la dernière édition
         </p>

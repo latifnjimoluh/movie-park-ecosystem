@@ -57,7 +57,7 @@ export default function PackSelector({ onSelectPack }: PackSelectorProps) {
 
   if (error) {
     return (
-      <div className="p-4 bg-[#a00000]/10 border border-[#a00000] text-[#dc143c] rounded-lg">
+      <div className="p-4 bg-[#854D0E]/10 border border-[#854D0E] text-[#FACC15] rounded-lg">
         {error}
       </div>
     )
@@ -89,16 +89,16 @@ export default function PackSelector({ onSelectPack }: PackSelectorProps) {
             <div
               key={pack.id}
               onClick={() => onSelectPack(pack.id, pack)}
-              className={`p-6 md:p-8 rounded-lg border-2 transition-all cursor-pointer hover:shadow-lg hover:shadow-[#a00000]/30 
+              className={`p-6 md:p-8 rounded-lg border-2 transition-all cursor-pointer hover:shadow-lg hover:shadow-[#854D0E]/30 
                 ${
                   pack.name.toLowerCase() === "vip"
-                    ? "bg-gradient-to-br from-[#1a0a0a] to-[#2a0a0a] border-[#dc143c]"
+                    ? "bg-gradient-to-br from-[#1a0a0a] to-[#2a0a0a] border-[#FACC15]"
                     : "bg-[#121212] border-[#333]"
                 }`}
             >
               {/* VIP BADGE */}
               {pack.name.toLowerCase() === "vip" && (
-                <div className="mb-4 inline-block px-3 py-1 bg-[#a00000] text-white text-xs font-bold rounded">
+                <div className="mb-4 inline-block px-3 py-1 bg-[#854D0E] text-white text-xs font-bold rounded">
                   {t("packSelector.popularTag", language)}
                 </div>
               )}
@@ -109,7 +109,7 @@ export default function PackSelector({ onSelectPack }: PackSelectorProps) {
               </h3>
 
               {/* PRICE */}
-              <div className="text-3xl font-bold text-[#dc143c] mb-4">
+              <div className="text-3xl font-bold text-[#FACC15] mb-4">
                 {pack.price.toLocaleString(language === "fr" ? "fr-FR" : "en-US")} XAF
               </div>
 
@@ -122,7 +122,7 @@ export default function PackSelector({ onSelectPack }: PackSelectorProps) {
               <div className="space-y-2 mb-4">
                 {(details?.features || []).slice(0, 3).map((feature, i) => (
                   <div key={i} className="flex items-start gap-2 text-xs text-[#cccccc]">
-                    <Check className="w-4 h-4 text-[#a00000] mt-0.5" />
+                    <Check className="w-4 h-4 text-[#854D0E] mt-0.5" />
                     <span>{feature}</span>
                   </div>
                 ))}
@@ -130,7 +130,7 @@ export default function PackSelector({ onSelectPack }: PackSelectorProps) {
 
               {/* CAPACITY */}
               <div className="flex gap-2 text-xs text-[#cccccc] mb-6">
-                <Check className="w-4 h-4 text-[#a00000] mt-0.5" />
+                <Check className="w-4 h-4 text-[#854D0E] mt-0.5" />
                 <span>
                   {pack.capacity === 1
                     ? "Pour 1 personne"
@@ -141,7 +141,7 @@ export default function PackSelector({ onSelectPack }: PackSelectorProps) {
               {/* CTA */}
               <button
                 onClick={() => onSelectPack(pack.id, pack)}
-                className="w-full bg-[#a00000] hover:bg-[#cc0000] text-white py-3 rounded-lg font-semibold transition-colors"
+                className="w-full bg-[#854D0E] hover:bg-[#cc0000] text-white py-3 rounded-lg font-semibold transition-colors"
               >
                 {t("packSelector.choosePackButton", language)}
               </button>
@@ -152,14 +152,14 @@ export default function PackSelector({ onSelectPack }: PackSelectorProps) {
 
       {/* SPECIAL STAND PACK */}
       {standPack && (
-        <div className="bg-[#121212] border-2 border-[#a00000] rounded-lg p-6 md:p-8 shadow-lg shadow-[#a00000]/30">
+        <div className="bg-[#121212] border-2 border-[#854D0E] rounded-lg p-6 md:p-8 shadow-lg shadow-[#854D0E]/30">
           {/* HEADER */}
           <div className="flex gap-4 items-start mb-6">
-            <Building2 className="w-8 h-8 text-[#dc143c]" />
+            <Building2 className="w-8 h-8 text-[#FACC15]" />
 
             <div>
               <h3 className="text-2xl font-bold text-[#f8f8f8]">{standPack.name}</h3>
-              <p className="text-sm text-[#a00000] font-semibold">
+              <p className="text-sm text-[#854D0E] font-semibold">
                 {t("packSelector.standTagline", language)}
               </p>
             </div>
@@ -172,7 +172,7 @@ export default function PackSelector({ onSelectPack }: PackSelectorProps) {
               <p className="text-xs text-[#999] uppercase mb-2">
                 {t("packSelector.standTarifLabel", language)}
               </p>
-              <p className="text-3xl font-bold text-[#dc143c]">
+              <p className="text-3xl font-bold text-[#FACC15]">
                 {standPack.price.toLocaleString(language === "fr" ? "fr-FR" : "en-US")} XAF
               </p>
             </div>
@@ -199,7 +199,7 @@ export default function PackSelector({ onSelectPack }: PackSelectorProps) {
           {/* CTA */}
           <button
             onClick={() => onSelectPack(standPack.id, standPack)}
-            className="w-full bg-[#a00000] hover:bg-[#cc0000] text-white py-4 rounded-lg font-semibold transition-colors"
+            className="w-full bg-[#854D0E] hover:bg-[#cc0000] text-white py-4 rounded-lg font-semibold transition-colors"
           >
             {t("packSelector.standReserveButton", language)}
           </button>

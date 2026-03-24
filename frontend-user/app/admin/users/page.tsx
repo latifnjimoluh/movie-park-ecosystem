@@ -38,7 +38,7 @@ export default function UsersPage() {
     },
   ])
   const [showAddModal, setShowAddModal] = useState(false)
-  const [newAdmin, setNewAdmin] = useState({ nom: "", email: "", role: "Contrôle Entrée" as const })
+  const [newAdmin, setNewAdmin] = useState<{ nom: string; email: string; role: AdminUser["role"] }>({ nom: "", email: "", role: "Contrôle Entrée" })
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token")
@@ -196,12 +196,7 @@ export default function UsersPage() {
                 onChange={(e) =>
                   setNewAdmin({
                     ...newAdmin,
-                    role: e.target.value as
-                      | "SuperAdmin"
-                      | "Comptabilité"
-                      | "Contrôle Entrée"
-                      | "Gestion Packs"
-                      | "Lecture seule",
+                    role: e.target.value as AdminUser["role"],
                   })
                 }
                 className="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"

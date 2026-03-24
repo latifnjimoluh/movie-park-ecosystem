@@ -1,32 +1,79 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { AdminLayout } from "@/components/admin/admin-layout"
-import { Camera, CheckCircle, XCircle, AlertCircle } from "lucide-react"
+import { Search, CheckCircle, XCircle, AlertCircle, Loader2, RefreshCw } from "lucide-react"
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_HOST || "http://localhost:3000/api"
 
 interface Participant {
-  id: number
-  nom: string
-  scanned: boolean
+  id: string
+  name: string
+  phone: string
+  entrance_validated: boolean
+  ticket_id: string | null
 }
 
-interface ScannedTicket {
-  id_ticket: string
-  pack: string
-  participants: Participant[]
-  places_max: number
-  places_used: number
+interface TicketResult {
+  ticket: {
+    id: string
+    ticket_number: string
+    status: "valid" | "used" | "cancelled"
+    reservation_id: string
+  }
+  reservation: {
+    id: string
+    payeur_name: string
+    payeur_phone: string
+    pack_name_snapshot: string
+    quantity: number
+    participants: Participant[]
+  }
+}
+
+async function searchTicket(ticket_number: string): Promise<TicketResult> {
+  const token = localStorage.getItem("admin_token")
+  const res = await fetch(`${BASE_URL}/scan/search`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    credentials: "include",
+    body: JSON.stringify({ ticket_number: ticket_number.trim().toUpperCase() }),
+  })
+  const json = await res.json()
+  if (!res.ok) throw new Error(json.message || "Ticket introuvable")
+  return json.data as TicketResult
+}
+
+async function validateParticipant(ticket_number: string, participant_id: string): Promise<void> {
+  const token = localStorage.getItem("admin_token")
+  const res = await fetch(`${BASE_URL}/scan/validate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    credentials: "include",
+    body: JSON.stringify({ ticket_number, participant_id }),
+  })
+  const json = await res.json()
+  if (!res.ok) throw new Error(json.message || "Validation échouée")
 }
 
 export default function ScanPage() {
   const router = useRouter()
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [scannedTicket, setScannedTicket] = useState<ScannedTicket | null>(null)
-  const [selectedParticipant, setSelectedParticipant] = useState<number | null>(null)
-  const [errorMessage, setErrorMessage] = useState("")
-  const [successMessage, setSuccessMessage] = useState("")
+  const [ticketNumber, setTicketNumber] = useState("")
+  const [result, setResult] = useState<TicketResult | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+  const [validatingId, setValidatingId] = useState<string | null>(null)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token")
@@ -34,181 +81,216 @@ export default function ScanPage() {
       router.push("/admin/login")
     } else {
       setIsAuthenticated(true)
-      setIsLoading(false)
     }
   }, [router])
 
-  const mockTicketData: ScannedTicket = {
-    id_ticket: "ABC12345",
-    pack: "Famille",
-    participants: [
-      { id: 1, nom: "John Doe", scanned: false },
-      { id: 2, nom: "Marie Doe", scanned: true },
-      { id: 3, nom: "Junior Doe", scanned: false },
-    ],
-    places_max: 5,
-    places_used: 1,
+  useEffect(() => {
+    if (success) {
+      const t = setTimeout(() => setSuccess(""), 3000)
+      return () => clearTimeout(t)
+    }
+  }, [success])
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!ticketNumber.trim()) return
+    setError("")
+    setSuccess("")
+    setResult(null)
+    setIsSearching(true)
+    try {
+      const data = await searchTicket(ticketNumber)
+      setResult(data)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsSearching(false)
+    }
   }
 
-  const handleScanQR = () => {
-    setErrorMessage("")
-    setSuccessMessage("")
-    setScannedTicket(mockTicketData)
-    setSelectedParticipant(null)
-  }
-
-  const handleValidateParticipant = (participantId: number) => {
-    if (!scannedTicket) return
-
-    const participant = scannedTicket.participants.find((p) => p.id === participantId)
-    if (!participant) return
-
-    if (participant.scanned) {
-      setErrorMessage("Ce participant a déjà été scanné")
+  const handleValidate = async (participant: Participant) => {
+    if (!result) return
+    if (participant.entrance_validated) {
+      setError(`${participant.name} a déjà été validé(e)`)
       return
     }
-
-    if (scannedTicket.places_used >= scannedTicket.places_max) {
-      setErrorMessage("Tous les participants ont été validés")
+    if (result.ticket.status !== "valid") {
+      setError("Ce ticket n'est plus valide")
       return
     }
-
-    const updatedParticipants = scannedTicket.participants.map((p) =>
-      p.id === participantId ? { ...p, scanned: true } : p,
-    )
-
-    const newPlacesUsed = scannedTicket.places_used + 1
-    const isComplete = newPlacesUsed === scannedTicket.places_max
-
-    setScannedTicket({
-      ...scannedTicket,
-      participants: updatedParticipants,
-      places_used: newPlacesUsed,
-    })
-
-    setSuccessMessage(`${participant.nom} a été validé(e)`)
-    setSelectedParticipant(null)
-
-    if (isComplete) {
-      setTimeout(() => setScannedTicket(null), 2000)
+    setError("")
+    setValidatingId(participant.id)
+    try {
+      await validateParticipant(result.ticket.ticket_number, participant.id)
+      // Refresh ticket data
+      const updated = await searchTicket(result.ticket.ticket_number)
+      setResult(updated)
+      setSuccess(`✅ ${participant.name} — entrée validée`)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setValidatingId(null)
     }
   }
 
-  if (isLoading || !isAuthenticated) return null
-
-  const getStatusBadge = (isComplete: boolean, placesUsed: number, placesMax: number) => {
-    if (isComplete) return { label: "COMPLET", color: "bg-green-600 text-white" }
-    if (placesUsed > 0) return { label: "PARTIELLEMENT UTILISÉ", color: "bg-orange-600 text-white" }
-    return { label: "VALIDÉ", color: "bg-blue-600 text-white" }
+  const handleReset = () => {
+    setResult(null)
+    setTicketNumber("")
+    setError("")
+    setSuccess("")
+    setTimeout(() => inputRef.current?.focus(), 100)
   }
 
-  const isComplete = scannedTicket ? scannedTicket.places_used === scannedTicket.places_max : false
-  const status = scannedTicket ? getStatusBadge(isComplete, scannedTicket.places_used, scannedTicket.places_max) : null
+  if (!isAuthenticated) return null
+
+  const participants = result?.reservation?.participants ?? []
+  const validated = participants.filter((p) => p.entrance_validated).length
+  const total = participants.length
+
+  const statusColor =
+    result?.ticket.status === "valid"
+      ? "bg-green-100 text-green-800 border-green-300"
+      : result?.ticket.status === "used"
+        ? "bg-blue-100 text-blue-800 border-blue-300"
+        : "bg-red-100 text-red-800 border-red-300"
+
+  const statusLabel =
+    result?.ticket.status === "valid"
+      ? "Valide"
+      : result?.ticket.status === "used"
+        ? "Utilisé"
+        : "Annulé"
 
   return (
     <AdminLayout>
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Contrôle d'entrée</h1>
-          <p className="text-muted-foreground">Scannez les QR codes des tickets pour valider les entrées</p>
+          <p className="text-muted-foreground mt-1">
+            Saisissez un numéro de ticket ou scannez le QR code (clavier physique)
+          </p>
         </div>
 
-        {/* Error Banner */}
-        {errorMessage && (
+        {/* Bandeaux de feedback */}
+        {error && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-red-800">{errorMessage}</p>
+            <p className="text-red-800 text-sm">{error}</p>
           </div>
         )}
-
-        {/* Success Banner */}
-        {successMessage && (
+        {success && (
           <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-            <p className="text-green-800">{successMessage}</p>
+            <p className="text-green-800 text-sm font-medium">{success}</p>
           </div>
         )}
 
-        {/* Main Content */}
-        {!scannedTicket ? (
-          <div className="bg-card border border-border rounded-lg p-12">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                <Camera className="w-8 h-8 text-primary" />
-              </div>
-              <p className="text-foreground font-medium text-center">Cliquez pour scanner un QR code</p>
-              <button
-                onClick={handleScanQR}
-                className="mt-4 px-6 py-3 bg-primary hover:bg-accent text-primary-foreground rounded-lg font-medium transition-colors"
-              >
-                Scanner un QR code
-              </button>
-            </div>
+        {/* Formulaire de recherche */}
+        <form onSubmit={handleSearch} className="flex gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="MIP-XXXXXXXX-YYYYYY"
+              value={ticketNumber}
+              onChange={(e) => setTicketNumber(e.target.value.toUpperCase())}
+              autoFocus
+              className="w-full pl-10 pr-4 py-3 bg-card border border-border rounded-lg text-foreground font-mono placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-colors text-sm"
+            />
           </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Ticket Card */}
+          <button
+            type="submit"
+            disabled={isSearching || !ticketNumber.trim()}
+            className="px-5 py-3 bg-primary hover:bg-accent text-primary-foreground rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+          >
+            {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+            {isSearching ? "Recherche…" : "Chercher"}
+          </button>
+        </form>
+
+        {/* Résultat */}
+        {result && (
+          <div className="space-y-4">
+            {/* Carte ticket */}
             <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Ticket ID</p>
-                  <p className="text-lg font-mono font-bold text-foreground">{scannedTicket.id_ticket}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Numéro de ticket</p>
+                  <p className="text-lg font-mono font-bold text-foreground">{result.ticket.ticket_number}</p>
                 </div>
-                <span className={`px-4 py-2 rounded-full text-sm font-medium ${status?.color}`}>{status?.label}</span>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusColor}`}>
+                  {statusLabel}
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border text-sm">
                 <div>
-                  <p className="text-sm text-muted-foreground">Pack</p>
-                  <p className="text-foreground font-medium">{scannedTicket.pack}</p>
+                  <p className="text-muted-foreground mb-0.5">Payeur</p>
+                  <p className="font-medium text-foreground">{result.reservation.payeur_name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Places utilisées</p>
-                  <p className="text-foreground font-medium">
-                    {scannedTicket.places_used} / {scannedTicket.places_max}
+                  <p className="text-muted-foreground mb-0.5">Pack</p>
+                  <p className="font-medium text-foreground">{result.reservation.pack_name_snapshot}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-0.5">Présences</p>
+                  <p className="font-bold text-foreground">
+                    {validated} / {total}
                   </p>
                 </div>
               </div>
+
+              {/* Barre de progression */}
+              <div className="mt-3 h-2 w-full bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-500"
+                  style={{ width: total > 0 ? `${(validated / total) * 100}%` : "0%" }}
+                />
+              </div>
             </div>
 
-            {/* Participants List */}
+            {/* Liste participants */}
             <div className="bg-card border border-border rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Participants</h2>
-              <div className="space-y-3">
-                {scannedTicket.participants.map((participant) => (
+              <h2 className="text-base font-semibold text-foreground mb-4">
+                Participants ({validated}/{total} validés)
+              </h2>
+              <div className="space-y-2">
+                {participants.map((p) => (
                   <div
-                    key={participant.id}
-                    onClick={() => !participant.scanned && setSelectedParticipant(participant.id)}
-                    className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                      selectedParticipant === participant.id
-                        ? "border-primary bg-primary/5"
-                        : participant.scanned
-                          ? "border-border bg-secondary"
-                          : "border-border hover:border-primary/50"
+                    key={p.id}
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+                      p.entrance_validated
+                        ? "bg-green-50 border-green-200"
+                        : "border-border hover:border-primary/50"
                     }`}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {p.entrance_validated ? (
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                      )}
                       <div>
-                        <p className="text-foreground font-medium">{participant.nom}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {participant.scanned ? "Entrée validée" : "Non encore scanné"}
+                        <p className="text-sm font-medium text-foreground">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {p.entrance_validated ? "Entrée validée" : "En attente"}
                         </p>
-                      </div>
-                      <div>
-                        {participant.scanned ? (
-                          <CheckCircle className="w-6 h-6 text-green-600" />
-                        ) : (
-                          <XCircle className="w-6 h-6 text-red-600" />
-                        )}
                       </div>
                     </div>
 
-                    {selectedParticipant === participant.id && (
+                    {!p.entrance_validated && result.ticket.status === "valid" && (
                       <button
-                        onClick={() => handleValidateParticipant(participant.id)}
-                        className="mt-4 w-full px-4 py-2 bg-primary hover:bg-accent text-primary-foreground rounded-md font-medium transition-colors text-sm"
+                        onClick={() => handleValidate(p)}
+                        disabled={validatingId === p.id}
+                        className="px-3 py-1.5 bg-primary hover:bg-accent text-primary-foreground rounded-md text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                       >
-                        Valider entrée de {participant.nom}
+                        {validatingId === p.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <CheckCircle className="w-3 h-3" />
+                        )}
+                        Valider
                       </button>
                     )}
                   </div>
@@ -216,17 +298,12 @@ export default function ScanPage() {
               </div>
             </div>
 
-            {/* Back Button */}
             <button
-              onClick={() => {
-                setScannedTicket(null)
-                setSelectedParticipant(null)
-                setErrorMessage("")
-                setSuccessMessage("")
-              }}
-              className="w-full px-4 py-2 bg-secondary hover:bg-secondary/80 text-foreground rounded-lg font-medium transition-colors"
+              onClick={handleReset}
+              className="w-full py-2.5 bg-secondary hover:bg-secondary/80 text-foreground rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
             >
-              Retour au scan
+              <RefreshCw className="w-4 h-4" />
+              Scanner un autre ticket
             </button>
           </div>
         )}

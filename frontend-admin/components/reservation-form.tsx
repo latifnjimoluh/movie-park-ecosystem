@@ -60,7 +60,7 @@ export default function ReservationForm({ formData, onChange, errors = {} }: Res
       <div className="grid md:grid-cols-2 gap-4 md:gap-6">
         <div>
           <label className="block text-[#f8f8f8] font-semibold mb-2 text-xs md:text-base">
-            {t("reservationForm.firstnameLabel", language)} <span className="text-[#dc143c]">*</span>
+            {t("reservationForm.firstnameLabel", language)} <span className="text-[#FACC15]">*</span>
           </label>
           <input
             type="text"
@@ -72,19 +72,19 @@ export default function ReservationForm({ formData, onChange, errors = {} }: Res
                        focus:outline-none focus:ring-1 text-xs md:text-sm
                        ${
                          getPrenomError()
-                           ? "border-[#dc143c] focus:border-[#dc143c] focus:ring-[#dc143c]"
-                           : "border-[#333333] focus:border-[#a00000] focus:ring-[#a00000]"
+                           ? "border-[#FACC15] focus:border-[#FACC15] focus:ring-[#FACC15]"
+                           : "border-[#333333] focus:border-[#854D0E] focus:ring-[#854D0E]"
                        }`}
             placeholder={t("reservationForm.firstnamePlaceholder", language)}
           />
           <p className="text-[#666666] text-xs mt-1">{formData.prenom.length}/20</p>
-          {getPrenomError() && <p className="text-[#dc143c] text-xs mt-2">{getPrenomError()}</p>}
+          {getPrenomError() && <p className="text-[#FACC15] text-xs mt-2">{getPrenomError()}</p>}
         </div>
 
         {/* LASTNAME */}
         <div>
           <label className="block text-[#f8f8f8] font-semibold mb-2 text-xs md:text-base">
-            {t("reservationForm.lastnameLabel", language)} <span className="text-[#dc143c]">*</span>
+            {t("reservationForm.lastnameLabel", language)} <span className="text-[#FACC15]">*</span>
           </label>
           <input
             type="text"
@@ -96,42 +96,45 @@ export default function ReservationForm({ formData, onChange, errors = {} }: Res
                        focus:outline-none focus:ring-1 text-xs md:text-sm
                        ${
                          getNomError()
-                           ? "border-[#dc143c] focus:border-[#dc143c] focus:ring-[#dc143c]"
-                           : "border-[#333333] focus:border-[#a00000] focus:ring-[#a00000]"
+                           ? "border-[#FACC15] focus:border-[#FACC15] focus:ring-[#FACC15]"
+                           : "border-[#333333] focus:border-[#854D0E] focus:ring-[#854D0E]"
                        }`}
             placeholder={t("reservationForm.lastnamePlaceholder", language)}
           />
           <p className="text-[#666666] text-xs mt-1">{formData.nom.length}/20</p>
-          {getNomError() && <p className="text-[#dc143c] text-xs mt-2">{getNomError()}</p>}
+          {getNomError() && <p className="text-[#FACC15] text-xs mt-2">{getNomError()}</p>}
         </div>
       </div>
 
       {/* PHONE - NOW REQUIRED */}
       <div>
         <label className="block text-[#f8f8f8] font-semibold mb-2 text-xs md:text-base">
-          {t("reservationForm.phoneLabel", language)} <span className="text-[#dc143c]">*</span>{" "}
-          <span className="text-[#999999] text-xs font-normal">ex: 237672475691</span>
+          {t("reservationForm.phoneLabel", language)} <span className="text-[#FACC15]">*</span>
         </label>
-        <input
-          type="tel"
-          inputMode="numeric"
-          value={formData.telephone}
-          onChange={(e) => onChange("telephone", validatePhoneNumber(e.target.value))}
-          maxLength={9}
-          className={`w-full px-3 md:px-4 py-2 md:py-3 bg-[#121212] border 
-                     rounded-lg text-[#f8f8f8] placeholder-[#666666] 
-                     focus:outline-none focus:ring-1 text-xs md:text-sm
-                     ${
-                       getPhoneError()
-                         ? "border-[#dc143c] focus:border-[#dc143c] focus:ring-[#dc143c]"
-                         : "border-[#333333] focus:border-[#a00000] focus:ring-[#a00000]"
-                     }`}
-          placeholder="672475691"
-        />
+        <div className="flex">
+          <span className="flex items-center px-3 py-2 md:py-3 bg-[#1a1a1a] border border-r-0 border-[#333333] rounded-l-lg text-[#999999] text-sm font-mono select-none">
+            +237
+          </span>
+          <input
+            type="tel"
+            inputMode="numeric"
+            value={formData.telephone}
+            onChange={(e) => onChange("telephone", validatePhoneNumber(e.target.value))}
+            maxLength={9}
+            className={`flex-1 px-3 md:px-4 py-2 md:py-3 bg-[#121212] border rounded-r-lg text-[#f8f8f8] placeholder-[#666666]
+                       focus:outline-none focus:ring-1 text-xs md:text-sm
+                       ${
+                         getPhoneError()
+                           ? "border-[#FACC15] focus:border-[#FACC15] focus:ring-[#FACC15]"
+                           : "border-[#333333] focus:border-[#854D0E] focus:ring-[#854D0E]"
+                       }`}
+            placeholder="6XXXXXXXX"
+          />
+        </div>
         <p className="text-[#666666] text-xs mt-1">
-          {formData.telephone.length}/9 chiffres (237 ajouté automatiquement)
+          {formData.telephone.length}/9 chiffres
         </p>
-        {getPhoneError() && <p className="text-[#dc143c] text-xs mt-2">{getPhoneError()}</p>}
+        {getPhoneError() && <p className="text-[#FACC15] text-xs mt-2">{getPhoneError()}</p>}
       </div>
 
       {/* EMAIL */}
@@ -145,8 +148,8 @@ export default function ReservationForm({ formData, onChange, errors = {} }: Res
           onChange={(e) => onChange("email", e.target.value)}
           className="w-full px-3 md:px-4 py-2 md:py-3 bg-[#121212] border border-[#333333] 
                      rounded-lg text-[#f8f8f8] placeholder-[#666666] 
-                     focus:outline-none focus:border-[#a00000] focus:ring-1 
-                     focus:ring-[#a00000] text-xs md:text-sm"
+                     focus:outline-none focus:border-[#854D0E] focus:ring-1 
+                     focus:ring-[#854D0E] text-xs md:text-sm"
           placeholder={t("reservationForm.emailPlaceholder", language)}
         />
       </div>
@@ -162,7 +165,7 @@ export default function ReservationForm({ formData, onChange, errors = {} }: Res
           onChange={(e) => onChange("howDidYouKnow", e.target.value)}
           className="w-full px-3 md:px-4 py-2 md:py-3 bg-[#121212] border border-[#333333] 
                      rounded-lg text-[#f8f8f8] focus:outline-none 
-                     focus:border-[#a00000] focus:ring-1 focus:ring-[#a00000] 
+                     focus:border-[#854D0E] focus:ring-1 focus:ring-[#854D0E] 
                      text-xs md:text-sm"
         >
           <option value="">{t("reservationForm.sourcePlaceholder", language)}</option>

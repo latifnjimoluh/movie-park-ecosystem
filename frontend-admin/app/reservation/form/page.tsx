@@ -28,17 +28,34 @@ export default function ReservationFormPage() {
   })
 
   useEffect(() => {
-    const packData = sessionStorage.getItem("selectedPack")
-    if (packData) {
-      try {
-        setSelectedPack(JSON.parse(packData))
-      } catch (err) {
-        console.error("Erreur parsing pack:", err)
+    // Try sessionStorage first, then localStorage with TTL as fallback
+    const loadPack = () => {
+      let packData = sessionStorage.getItem("selectedPack")
+      if (!packData) {
+        const stored = localStorage.getItem("reservation_pack")
+        if (stored) {
+          try {
+            const { data, expiresAt } = JSON.parse(stored)
+            if (Date.now() < expiresAt) {
+              packData = JSON.stringify(data)
+            } else {
+              localStorage.removeItem("reservation_pack")
+            }
+          } catch {}
+        }
+      }
+      if (packData) {
+        try {
+          setSelectedPack(JSON.parse(packData))
+        } catch (err) {
+          console.error("Erreur parsing pack:", err)
+          router.push("/reservation")
+        }
+      } else {
         router.push("/reservation")
       }
-    } else {
-      router.push("/reservation")
     }
+    loadPack()
   }, [router])
 
   const handleFormChange = (field: string, value: string) => {
@@ -66,7 +83,7 @@ export default function ReservationFormPage() {
     }
     if (!formData.telephone.trim()) {
       newErrors.telephone = `${t("reservationForm.phoneLabel", language)} - ${t("reservationForm.required", language)}`
-    } else if (formData.telephone.length < 9) {
+    } else if (formData.telephone.replace(/\D/g, "").length < 9) {
       newErrors.telephone = `${t("reservationForm.phoneLabel", language)} - ${t("reservationForm.minDigits", language)}`
     }
 
@@ -114,14 +131,17 @@ export default function ReservationFormPage() {
       phoneWithPrefix = "237" + phoneWithPrefix
     }
 
-    // Sauvegarder et rediriger
-    sessionStorage.setItem(
-      "reservationFormData",
-      JSON.stringify({
-        formData: { ...formData, telephone: phoneWithPrefix },
-        participants,
-        packId: selectedPack.id,
-      }),
+    const reservationPayload = {
+      formData: { ...formData, telephone: phoneWithPrefix },
+      participants,
+      packId: selectedPack.id,
+    }
+
+    // Save to sessionStorage + localStorage (TTL 30 min) for recovery
+    sessionStorage.setItem("reservationFormData", JSON.stringify(reservationPayload))
+    localStorage.setItem(
+      "reservation_form",
+      JSON.stringify({ data: reservationPayload, expiresAt: Date.now() + 30 * 60 * 1000 }),
     )
 
     router.push("/reservation/summary")
@@ -150,9 +170,26 @@ export default function ReservationFormPage() {
       <section className="bg-gradient-to-br from-[#0a0a0a] to-[#1a0a0a] pt-28 md:pt-32 pb-12 md:pb-16 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl md:text-5xl font-bold text-[#f8f8f8] mb-4">Formulaire de réservation</h1>
-          <p className="text-sm md:text-lg text-[#cccccc]">
+          <p className="text-sm md:text-lg text-[#cccccc] mb-8">
             Complétez vos informations pour finaliser votre réservation
           </p>
+          {/* Stepper */}
+          <div className="flex items-center gap-0 max-w-sm">
+            {["Pack", "Informations", "Confirmation"].map((step, idx) => (
+              <div key={idx} className="flex items-center flex-1">
+                <div className="flex flex-col items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
+                    ${idx === 1 ? "bg-[#FACC15] text-[#0a0a0a]" : idx < 1 ? "bg-[#854D0E] text-white" : "bg-[#333] text-[#666]"}`}>
+                    {idx < 1 ? "✓" : idx + 1}
+                  </div>
+                  <span className={`text-xs mt-1 whitespace-nowrap ${idx === 1 ? "text-[#FACC15]" : idx < 1 ? "text-[#854D0E]" : "text-[#666]"}`}>
+                    {step}
+                  </span>
+                </div>
+                {idx < 2 && <div className={`flex-1 h-0.5 mb-4 ${idx < 1 ? "bg-[#854D0E]" : "bg-[#333]"}`} />}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

@@ -27,9 +27,9 @@ const isValid =
   if (!isValid) {
     return (
       <div className="max-w-3xl mx-auto">
-        <div className="bg-[#a00000]/10 border border-[#a00000] rounded-lg p-6 md:p-8">
+        <div className="bg-[#854D0E]/10 border border-[#854D0E] rounded-lg p-6 md:p-8">
           <div className="flex items-center gap-3 mb-4">
-            <AlertCircle className="w-8 h-8 text-[#dc143c]" />
+            <AlertCircle className="w-8 h-8 text-[#FACC15]" />
             <h3 className="text-xl md:text-2xl font-bold text-[#f8f8f8]">
               Erreur de réservation
             </h3>
@@ -46,7 +46,7 @@ const isValid =
 
           <button
             onClick={() => window.location.href = "/reservation"}
-            className="mt-6 w-full bg-[#a00000] hover:bg-[#cc0000] text-white py-3 rounded-lg font-semibold"
+            className="mt-6 w-full bg-[#854D0E] hover:bg-[#cc0000] text-white py-3 rounded-lg font-semibold"
           >
             Recommencer la réservation
           </button>
@@ -82,12 +82,12 @@ const isValid =
 
       {/* SUCCESS MESSAGE */}
       <div className="text-center">
-        <CheckCircle className="w-16 h-16 text-[#a00000] mx-auto mb-4" />
+        <CheckCircle className="w-16 h-16 text-[#854D0E] mx-auto mb-4" />
         <h2 className="text-4xl font-bold text-[#f8f8f8] mb-2">
           Réservation confirmée !
         </h2>
         <p className="text-lg text-[#cccccc]">
-          Votre réservation <span className="text-[#dc143c] font-bold">#{reservationId}</span> a été prise en compte.
+          Votre réservation <span className="text-[#FACC15] font-bold">#{reservationId}</span> a été prise en compte.
         </p>
       </div>
 
@@ -100,7 +100,7 @@ const isValid =
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <p className="text-xs text-[#999] uppercase mb-2">Numéro de réservation</p>
-            <p className="text-2xl font-bold text-[#dc143c]">{reservationId}</p>
+            <p className="text-2xl font-bold text-[#FACC15]">{reservationId}</p>
           </div>
 
           <div>
@@ -110,7 +110,7 @@ const isValid =
 
           <div>
             <p className="text-xs text-[#999] uppercase mb-2">Montant à payer</p>
-            <p className="text-2xl font-bold text-[#a00000]">
+            <p className="text-2xl font-bold text-[#854D0E]">
               {totalAmount.toLocaleString("fr-FR")} XAF
             </p>
           </div>
@@ -123,9 +123,9 @@ const isValid =
       </div>
 
       {/* PAYMENT INSTRUCTIONS */}
-      <div className="bg-gradient-to-br from-[#1a0a0a] to-[#0a0a0a] rounded-lg p-8 border border-[#a00000]">
+      <div className="bg-gradient-to-br from-[#1a0a0a] to-[#0a0a0a] rounded-lg p-8 border border-[#854D0E]">
         <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-          <Smartphone className="w-6 h-6 text-[#a00000]" />
+          <Smartphone className="w-6 h-6 text-[#854D0E]" />
           Instructions de paiement
         </h3>
 
@@ -142,12 +142,12 @@ const isValid =
             <p className="text-white font-bold mb-3">MTN Mobile Money / Orange Money</p>
 
             <p className="text-[#999] text-sm">Numéro</p>
-            <p className="text-[#dc143c] font-bold text-xl mb-3">
+            <p className="text-[#FACC15] font-bold text-xl mb-3">
               +237 697 30 44 50
             </p>
 
             <p className="text-[#999] text-sm">Montant</p>
-            <p className="text-[#a00000] text-2xl font-bold">
+            <p className="text-[#854D0E] text-2xl font-bold">
               {totalAmount.toLocaleString("fr-FR")} XAF
             </p>
           </div>
@@ -204,7 +204,7 @@ const isValid =
             },
           ].map((step, i) => (
             <div key={i} className="flex gap-4">
-              <div className="w-10 h-10 bg-[#a00000] text-white rounded-full flex items-center justify-center font-bold">
+              <div className="w-10 h-10 bg-[#854D0E] text-white rounded-full flex items-center justify-center font-bold">
                 {i + 1}
               </div>
 
@@ -221,7 +221,7 @@ const isValid =
       <div className="bg-[#1a0a0a] p-6 border border-[#333] rounded-lg text-center">
         <p className="text-[#ccc]">
           {t("paymentInstructions.infoMessage", language)}{" "}
-          <a href="/" className="text-[#a00000] hover:text-[#dc143c] font-semibold">
+          <a href="/" className="text-[#854D0E] hover:text-[#FACC15] font-semibold">
             {t("paymentInstructions.homepage", language)}
           </a>
         </p>

@@ -37,33 +37,33 @@ export default function FilmDetail({ film }: { film: Film }) {
         <div className="space-y-3 mb-6">
           <div className="flex flex-wrap gap-4 text-[#cccccc]">
             <div>
-              <span className="text-[#a00000] font-semibold">Genre:</span> {film.genre}
+              <span className="text-[#854D0E] font-semibold">Genre:</span> {film.genre}
             </div>
             <div>
-              <span className="text-[#a00000] font-semibold">Pays:</span> {film.country}
+              <span className="text-[#854D0E] font-semibold">Pays:</span> {film.country}
             </div>
             <div>
-              <span className="text-[#a00000] font-semibold">Année:</span> {film.year}
+              <span className="text-[#854D0E] font-semibold">Année:</span> {film.year}
             </div>
           </div>
 
           <div className="flex flex-wrap gap-4 text-[#cccccc]">
             <div>
-              <span className="text-[#a00000] font-semibold">Durée:</span> {film.duration}
+              <span className="text-[#854D0E] font-semibold">Durée:</span> {film.duration}
             </div>
             <div>
-              <span className="text-[#a00000] font-semibold">Classification:</span> {film.classification}
+              <span className="text-[#854D0E] font-semibold">Classification:</span> {film.classification}
             </div>
           </div>
 
-          <div className="text-3xl font-bold text-[#dc143c] pt-2">Projection à {film.screeningTime}</div>
+          <div className="text-3xl font-bold text-[#FACC15] pt-2">Projection à {film.screeningTime}</div>
         </div>
 
         <p className="text-lg text-[#cccccc] leading-relaxed mb-8">{film.synopsys}</p>
 
         {/* <button
           onClick={() => setShowTrailer(!showTrailer)}
-          className="bg-[#a00000] hover:bg-[#cc0000] text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+          className="bg-[#854D0E] hover:bg-[#cc0000] text-white px-8 py-3 rounded-lg font-semibold transition-colors"
         >
           {showTrailer ? "Masquer la bande-annonce" : "Voir la bande-annonce"}
         </button> */}

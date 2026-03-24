@@ -28,6 +28,7 @@ export default function PacksPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [deleteConfirmPack, setDeleteConfirmPack] = useState<Pack | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token")
@@ -161,12 +162,11 @@ export default function PacksPage() {
   }
 
   const handleDeletePack = async (packId: string) => {
-    if (!window.confirm("Are you sure you want to delete this pack?")) return
-
     try {
       setError(null)
       const response = await fetch(`${api.baseURL}/packs/${packId}`, {
         method: "DELETE",
+        credentials: "include",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
         },
@@ -175,14 +175,15 @@ export default function PacksPage() {
       const result = await response.json()
 
       if (result.status === 200) {
-        setSuccess("Pack deleted successfully")
+        setSuccess("Pack supprimé avec succès")
+        setDeleteConfirmPack(null)
         await loadPacks()
       } else {
-        setError(result.message || "Failed to delete pack")
+        setError(result.message || "Échec de la suppression")
       }
     } catch (err) {
       console.error("[v0] Error deleting pack:", err)
-      setError("Error deleting pack")
+      setError("Erreur lors de la suppression")
     }
   }
 
@@ -233,7 +234,7 @@ export default function PacksPage() {
                     <Edit2 className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleDeletePack(pack.id)}
+                    onClick={() => setDeleteConfirmPack(pack)}
                     className="p-2 hover:bg-red-500/20 rounded-md transition-colors text-red-600"
                   >
                     <Trash2 className="w-5 h-5" />
@@ -258,8 +259,12 @@ export default function PacksPage() {
         )}
 
         {packs.length === 0 ? (
-          <div className="bg-card border border-border rounded-lg p-12 text-center">
-            <p className="text-muted-foreground mb-4">Aucun pack trouvé</p>
+          <div className="bg-card border border-border rounded-lg p-16 text-center">
+            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
+              <Plus className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <p className="text-foreground font-medium mb-1">Aucun pack configuré</p>
+            <p className="text-muted-foreground text-sm mb-6">Créez votre premier pack pour commencer à recevoir des réservations</p>
             <button
               onClick={handleCreateClick}
               className="px-4 py-2 bg-primary hover:bg-accent text-primary-foreground rounded-md transition-colors font-medium"
@@ -403,6 +408,34 @@ export default function PacksPage() {
               className="px-4 py-2 bg-primary hover:bg-accent text-primary-foreground rounded-md transition-colors font-medium text-sm disabled:opacity-50"
             >
               {isSaving ? "Création..." : "Créer"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteConfirmPack} onOpenChange={(open) => !open && setDeleteConfirmPack(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer le pack</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground py-4">
+            Êtes-vous sûr de vouloir supprimer le pack{" "}
+            <span className="font-semibold text-foreground">"{deleteConfirmPack?.name}"</span> ?
+            Cette action est irréversible.
+          </p>
+          <DialogFooter>
+            <button
+              onClick={() => setDeleteConfirmPack(null)}
+              className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-foreground rounded-md transition-colors font-medium text-sm"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={() => deleteConfirmPack && handleDeletePack(deleteConfirmPack.id)}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors font-medium text-sm"
+            >
+              Supprimer
             </button>
           </DialogFooter>
         </DialogContent>

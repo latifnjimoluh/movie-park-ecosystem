@@ -32,9 +32,9 @@ export default function ConfirmationModal({ isOpen, onClose, reservation }: Conf
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1a0a0a] border-2 border-[#a00000] rounded-lg max-w-md w-full shadow-2xl animate-in fade-in">
+      <div className="bg-[#1a0a0a] border-2 border-[#854D0E] rounded-lg max-w-md w-full shadow-2xl animate-in fade-in">
         {/* Header */}
-        <div className="bg-[#a00000] px-6 py-4 flex items-center justify-between">
+        <div className="bg-[#854D0E] px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Action requise</h2>
           <button
             onClick={onClose}
@@ -49,7 +49,7 @@ export default function ConfirmationModal({ isOpen, onClose, reservation }: Conf
         <div className="p-6 space-y-6">
           {/* Main message */}
           <div>
-            <h3 className="text-2xl font-bold text-[#dc143c] mb-2">Votre réservation est bien enregistrée</h3>
+            <h3 className="text-2xl font-bold text-[#FACC15] mb-2">Votre réservation est bien enregistrée</h3>
 
             <p className="text-[#cccccc] text-sm leading-relaxed">
               Pour continuer, merci de confirmer vos informations via WhatsApp. Le paiement peut être effectué

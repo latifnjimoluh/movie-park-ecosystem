@@ -13,10 +13,13 @@ export default function ReservationPage() {
   const { language } = useTheme()
 
   const handlePackSelect = (packId: string, packData: BackendPack) => {
-    // Sauvegarder le pack dans sessionStorage
-    sessionStorage.setItem('selectedPack', JSON.stringify(packData))
-    
-    // Naviguer vers la page du formulaire
+    // Save in sessionStorage + localStorage (TTL 30 min) for recovery
+    sessionStorage.setItem("selectedPack", JSON.stringify(packData))
+    localStorage.setItem(
+      "reservation_pack",
+      JSON.stringify({ data: packData, expiresAt: Date.now() + 30 * 60 * 1000 }),
+    )
+
     router.push(`/reservation/form?packId=${packId}`)
   }
 

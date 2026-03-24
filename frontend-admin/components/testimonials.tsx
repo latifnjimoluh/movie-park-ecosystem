@@ -1,13 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Star } from "lucide-react"
 import { t } from "@/lib/i18n"
 import { useTheme } from "@/lib/theme-context"
 
 
 export default function Testimonials() {
-  const [isVisible, setIsVisible] = useState(false)
   const { language } = useTheme()
 
 
@@ -42,15 +40,6 @@ export default function Testimonials() {
     },
   ]
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => entry.isIntersecting && setIsVisible(true),
-      { threshold: 0.1 },
-    )
-    const element = document.getElementById("testimonials")
-    if (element) observer.observe(element)
-  }, [])
-
   return (
     <section id="testimonials" className="w-full bg-[#F5F5F5] py-20 md:py-32 px-4 md:px-6">
       <div className="max-w-6xl mx-auto">
@@ -64,7 +53,7 @@ export default function Testimonials() {
         <div className="bg-white rounded-2xl p-8 mb-16 md:mb-20 text-center max-w-2xl mx-auto shadow-md">
           <div className="flex justify-center gap-1 mb-4">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} size={40} fill="#DC143C" className="text-[#DC143C]" />
+              <Star key={i} size={40} fill="#FACC15" className="text-[#FACC15]" />
             ))}
           </div>
 
@@ -82,15 +71,13 @@ export default function Testimonials() {
           {testimonials.map((testimonial, index) => (
             <div
               key={testimonial.id}
-              className={`bg-white rounded-2xl p-8 shadow-lg transition-all duration-500 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-              }`}
-              style={{ transitionDelay: `${index * 0.15}s` }}
+              className="bg-white rounded-2xl p-8 shadow-lg animate-fade-in-up"
+              style={{ animationDelay: `${index * 0.15}s` }}
             >
               {/* Stars */}
               <div className="flex gap-1 mb-6">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} size={20} fill="#DC143C" className="text-[#DC143C]" />
+                  <Star key={i} size={20} fill="#FACC15" className="text-[#FACC15]" />
                 ))}
               </div>
 
@@ -104,7 +91,7 @@ export default function Testimonials() {
                 <img
                   src={testimonial.photo}
                   alt={testimonial.author}
-                  className="w-12 h-12 rounded-full border-2 border-[#DC143C] object-cover"
+                  className="w-12 h-12 rounded-full border-2 border-[#FACC15] object-cover"
                 />
                 <div>
                   <p className="font-bold text-black text-sm">{testimonial.author}</p>

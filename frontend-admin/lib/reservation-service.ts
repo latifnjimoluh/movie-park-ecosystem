@@ -182,11 +182,9 @@ export async function getReservationById(id: string): Promise<any | null> {
 
 export async function getReservationsByPhone(phone: string): Promise<any[]> {
   try {
-    const response = await fetch(`${API_URL}/reservations?q=${phone}`, {
+    const response = await fetch(`${API_URL}/reservations/track?phone=${encodeURIComponent(phone)}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     })
 
     if (!response.ok) {

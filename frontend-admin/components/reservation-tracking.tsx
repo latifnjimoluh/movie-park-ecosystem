@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { getReservationsByPhone } from "@/lib/reservation-service"
 import type { Reservation } from "@/lib/types"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Ticket, CheckCircle, Clock, XCircle } from "lucide-react"
 import { t } from "@/lib/i18n"
 import { useTheme } from "@/lib/theme-context"
 
@@ -15,7 +15,7 @@ interface ReservationTrackingProps {
 export default function ReservationTracking({ phone, onReset }: ReservationTrackingProps) {
   const { language } = useTheme()
 
-  const [reservations, setReservations] = useState<Reservation[]>([])
+  const [reservations, setReservations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function ReservationTracking({ phone, onReset }: ReservationTrack
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="w-12 h-12 rounded-full border-4 border-[#333333] border-t-[#a00000] animate-spin mx-auto mb-4" />
+        <div className="w-12 h-12 rounded-full border-4 border-[#333333] border-t-[#854D0E] animate-spin mx-auto mb-4" />
         <p className="text-[#cccccc]">{t("reservationTracking.loading", language)}</p>
       </div>
     )
@@ -106,7 +106,7 @@ export default function ReservationTracking({ phone, onReset }: ReservationTrack
                     : reservation.status === "paiement_partiel"
                       ? "bg-[#ffc107]"
                       : reservation.status === "en_attente_paiement"
-                        ? "bg-[#a00000]"
+                        ? "bg-[#854D0E]"
                         : "bg-[#007bff]"
                 }`}
               >
@@ -123,34 +123,83 @@ export default function ReservationTracking({ phone, onReset }: ReservationTrack
 
               <div>
                 <p className="text-sm text-[#999999] mb-2">{t("reservationTracking.totalAmount", language)}</p>
-                <p className="text-2xl font-bold text-[#dc143c]">
-                  {reservation.totalPrice.toLocaleString("fr-FR")} XAF
+                <p className="text-2xl font-bold text-[#FACC15]">
+                  {(reservation.totalPrice || reservation.total_price || 0).toLocaleString("fr-FR")} XAF
                 </p>
               </div>
 
               <div>
                 <p className="text-sm text-[#999999] mb-2">{t("reservationTracking.paidAmount", language)}</p>
                 <p className="text-lg font-semibold text-[#f8f8f8]">
-                  {reservation.amountPaid.toLocaleString("fr-FR")} XAF
+                  {(reservation.amountPaid || reservation.total_paid || 0).toLocaleString("fr-FR")} XAF
                 </p>
               </div>
 
               <div>
                 <p className="text-sm text-[#999999] mb-2">{t("reservationTracking.remainingAmount", language)}</p>
-                <p className="text-lg font-semibold text-[#a00000]">
-                  {(reservation.totalPrice - reservation.amountPaid).toLocaleString("fr-FR")} XAF
+                <p className="text-lg font-semibold text-[#854D0E]">
+                  {(reservation.remaining || (reservation.total_price - reservation.total_paid) || 0).toLocaleString("fr-FR")} XAF
                 </p>
               </div>
             </div>
 
             {/* RESERVING PERSON */}
-            <div>
+            <div className="mb-6">
               <p className="text-sm text-[#999999] mb-3">{t("reservationTracking.reservingPerson", language)}</p>
-
-              <p className="text-[#f8f8f8]">
-                {reservation.nom /* nom complet déjà fourni */ }
-              </p>
+              <p className="text-[#f8f8f8]">{reservation.nom}</p>
             </div>
+
+            {/* TICKETS */}
+            {reservation.tickets && reservation.tickets.length > 0 && (
+              <div className="border-t border-[#333333] pt-6">
+                <p className="text-sm text-[#999999] mb-4 flex items-center gap-2">
+                  <Ticket className="w-4 h-4" />
+                  {language === "fr" ? "Vos tickets" : "Your tickets"}
+                </p>
+                <div className="space-y-3">
+                  {reservation.tickets.map((ticket: any) => (
+                    <div key={ticket.id} className="bg-[#0a0a0a] rounded-lg p-4 border border-[#333333]">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="font-mono text-[#f8f8f8] text-sm font-bold">{ticket.ticket_number}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1
+                          ${ticket.status === "valid" ? "bg-[#28a745]/20 text-[#28a745]" :
+                            ticket.status === "used" ? "bg-[#007bff]/20 text-[#007bff]" :
+                            "bg-[#dc3545]/20 text-[#dc3545]"}`}>
+                          {ticket.status === "valid" ? <CheckCircle className="w-3 h-3" /> :
+                           ticket.status === "used" ? <CheckCircle className="w-3 h-3" /> :
+                           <XCircle className="w-3 h-3" />}
+                          {ticket.status === "valid" ? (language === "fr" ? "Valide" : "Valid") :
+                           ticket.status === "used" ? (language === "fr" ? "Utilisé" : "Used") :
+                           (language === "fr" ? "Annulé" : "Cancelled")}
+                        </span>
+                      </div>
+                      {ticket.qr_image_url && (
+                        <div className="flex justify-center mt-3">
+                          <img
+                            src={ticket.qr_image_url}
+                            alt={`QR Code ${ticket.ticket_number}`}
+                            className="w-40 h-40 rounded-lg border border-[#333333]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* No ticket yet indicator */}
+            {(!reservation.tickets || reservation.tickets.length === 0) && reservation.status !== "cancelled" && (
+              <div className="border-t border-[#333333] pt-6">
+                <div className="flex items-center gap-3 text-[#999999] text-sm">
+                  <Clock className="w-4 h-4 flex-shrink-0" />
+                  <p>{language === "fr"
+                    ? "Votre ticket sera généré une fois le paiement complet validé."
+                    : "Your ticket will be generated once full payment is confirmed."
+                  }</p>
+                </div>
+              </div>
+            )}
 
           </div>
         )

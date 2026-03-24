@@ -1,8 +1,11 @@
 "use client"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_HOST || "http://localhost:3001/api"
+const BASE_URL = process.env.NEXT_PUBLIC_API_HOST || "http://localhost:3000/api"
+const API_TIMEOUT_MS = 10000 // 10 seconds
 
 // ---------------- TOKEN MANAGEMENT ----------------
+// Access token kept in localStorage ONLY as a client-side auth indicator and fallback header.
+// The httpOnly cookie set by the backend is the primary (XSS-safe) auth mechanism.
 function getAccessToken() {
   return localStorage.getItem("admin_token")
 }
@@ -20,51 +23,70 @@ function logout() {
   localStorage.removeItem("admin_token")
   localStorage.removeItem("admin_refresh_token")
   localStorage.removeItem("admin_role")
+  // Call backend to clear httpOnly cookies
+  fetch(`${BASE_URL}/auth/logout`, { method: "POST", credentials: "include" }).catch(() => {})
   window.location.href = "/admin/login"
 }
 
 // ---------------- REQUEST WRAPPER ----------------
 async function request(method: string, url: string, body?: any) {
   const token = getAccessToken()
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS)
 
   const options: RequestInit = {
     method,
+    credentials: "include", // Send httpOnly cookies automatically
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
+    signal: controller.signal,
   }
 
-  let res = await fetch(`${BASE_URL}${url}`, options)
+  try {
+    let res = await fetch(`${BASE_URL}${url}`, options)
+    clearTimeout(timeoutId)
 
-  // ----------- TOKEN EXPIRED → REFRESH -----------
-  if (res.status === 401 && getRefreshToken()) {
-    const refreshed = await refreshAccessToken()
+    // ----------- TOKEN EXPIRED → REFRESH -----------
+    if (res.status === 401 && getRefreshToken()) {
+      const refreshed = await refreshAccessToken()
 
-    if (refreshed) {
-      const newToken = getAccessToken()
+      if (refreshed) {
+        const newToken = getAccessToken()
+        const retryController = new AbortController()
+        const retryTimeout = setTimeout(() => retryController.abort(), API_TIMEOUT_MS)
 
-      const retryOptions = {
-        ...options,
-        headers: {
-          ...options.headers,
-          Authorization: `Bearer ${newToken}`,
-        },
+        const retryOptions = {
+          ...options,
+          headers: {
+            ...options.headers,
+            ...(newToken ? { Authorization: `Bearer ${newToken}` } : {}),
+          },
+          signal: retryController.signal,
+        }
+
+        res = await fetch(`${BASE_URL}${url}`, retryOptions)
+        clearTimeout(retryTimeout)
       }
-
-      res = await fetch(`${BASE_URL}${url}`, retryOptions)
     }
+
+    // ----------- PROCESS RESPONSE -----------
+    const json = await res.json().catch(() => null)
+
+    if (!res.ok) {
+      throw new Error(json?.message || "Une erreur s'est produite")
+    }
+
+    return json.data || json
+  } catch (err: any) {
+    clearTimeout(timeoutId)
+    if (err.name === "AbortError") {
+      throw new Error("La requête a expiré. Vérifiez votre connexion.")
+    }
+    throw err
   }
-
-  // ----------- PROCESS RESPONSE -----------
-  const json = await res.json().catch(() => null)
-
-  if (!res.ok) {
-    throw new Error(json?.message || "Une erreur s’est produite")
-  }
-
-  return json.data || json
 }
 
 // ---------------- REFRESH TOKEN ----------------
@@ -73,11 +95,17 @@ async function refreshAccessToken() {
     const refreshToken = getRefreshToken()
     if (!refreshToken) return false
 
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS)
+
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
       method: "POST",
+      credentials: "include", // Uses httpOnly refresh_token cookie
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
+      signal: controller.signal,
     })
+    clearTimeout(timeoutId)
 
     if (!res.ok) {
       logout()
@@ -96,9 +124,12 @@ async function refreshAccessToken() {
 // ---------------- API GROUPS ----------------
 
 export const api = {
+  baseURL: BASE_URL,
   // ---------- AUTH ----------
   auth: {
     login: (email: string, password: string) => request("POST", "/auth/login", { email, password }),
+
+    me: () => request("GET", "/auth/me"),
 
     refresh: () => request("POST", "/auth/refresh"),
 
@@ -122,6 +153,7 @@ export const api = {
     create: (data: any) => request("POST", "/reservations", data),
     update: (id: string, data: any) => request("PUT", `/reservations/${id}`, data),
     cancel: (id: string) => request("POST", `/reservations/${id}/cancel`),
+    export: (params = "") => `${BASE_URL}/reservations/export${params}`,
   },
 
   // ---------- PAYMENTS ----------
@@ -148,5 +180,18 @@ export const api = {
     jwtValidate: (qr_payload: string) => request("POST", "/scan/validate", { qr_payload }),
 
     stats: () => request("GET", "/scan/stats"),
+  },
+
+  // ---------- USERS ----------
+  users: {
+    getAll: () => request("GET", "/users"),
+    create: (data: any) => request("POST", "/users", data),
+    update: (id: string, data: any) => request("PUT", `/users/${id}`, data),
+    delete: (id: string) => request("DELETE", `/users/${id}`),
+  },
+
+  // ---------- AUDIT ----------
+  audit: {
+    getAll: (params = "") => request("GET", `/audit${params}`),
   },
 }

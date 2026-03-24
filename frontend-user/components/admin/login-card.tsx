@@ -104,11 +104,6 @@ export function LoginCard({ onLogin, isLoading, error }: LoginCardProps) {
           </button>
         </form>
 
-        {/* Demo Credentials */}
-        <div className="mt-8 pt-6 border-t border-gray-800">
-          <p className="text-xs text-gray-500 text-center mb-2">Demo credentials:</p>
-          <p className="text-xs text-gray-600 text-center font-mono">admin@moviepark.com / admin123</p>
-        </div>
       </div>
     </div>
   )

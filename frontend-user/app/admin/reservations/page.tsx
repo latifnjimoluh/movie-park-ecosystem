@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AdminLayout } from "@/components/admin/admin-layout"
-import { Search, Filter, ChevronRight } from "lucide-react"
+import { Search, Filter, ChevronRight, Download } from "lucide-react"
 import { api } from "@/lib/api"
 
 interface ReservationRow {
@@ -100,19 +100,19 @@ export default function ReservationsPage() {
   }
 
   const getStatutBadge = (statut: string) => {
-    const variants = {
+    const variants: Record<string, string> = {
       en_attente: "badge-en-attente",
       partiel: "badge-partiel",
       payé: "badge-paye",
       ticket_généré: "badge-ticket-genere",
     }
-    const labels = {
+    const labels: Record<string, string> = {
       en_attente: "En attente",
       partiel: "Partiel",
       payé: "Payé",
       ticket_généré: "Ticket généré",
     }
-    return { className: variants[statut], label: labels[statut] }
+    return { className: variants[statut] ?? "badge-en-attente", label: labels[statut] ?? statut }
   }
 
   const montantRestant = (r: ReservationRow) => r.prixTotal - r.totalPayé
@@ -128,11 +128,21 @@ export default function ReservationsPage() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Réservations</h1>
-          <p className="text-muted-foreground">
-            Total: {filteredReservations.length} réservation(s)
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Réservations</h1>
+            <p className="text-muted-foreground">
+              Total: {filteredReservations.length} réservation(s)
+            </p>
+          </div>
+          <a
+            href={`${api.baseURL}/reservations/export${statusFilter !== "tous" ? `?status=${statusFilter}` : ""}`}
+            download
+            className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-secondary/80 text-foreground rounded-md transition-colors font-medium text-sm"
+          >
+            <Download className="w-4 h-4" />
+            Exporter CSV
+          </a>
         </div>
 
         {/* Search + Filter */}
@@ -219,8 +229,16 @@ export default function ReservationsPage() {
 
             {/* Empty state */}
             {filteredReservations.length === 0 && (
-              <div className="p-8 text-center text-muted-foreground">
-                Aucune réservation trouvée
+              <div className="p-12 text-center">
+                <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <p className="text-foreground font-medium mb-1">Aucune réservation trouvée</p>
+                <p className="text-muted-foreground text-sm">
+                  {search || statusFilter !== "tous"
+                    ? "Modifiez vos filtres pour voir plus de résultats"
+                    : "Les réservations apparaîtront ici une fois créées"}
+                </p>
               </div>
             )}
           </div>

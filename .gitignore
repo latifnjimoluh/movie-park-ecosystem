@@ -1,0 +1,25 @@
+# Node.js
+node_modules/
+dist/
+build/
+.next/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Git specific
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Suggestions and internal docs (excluded as requested)
+SUGGESTIONS.md
+SUGGESTIONS_V2.md
+DATABASE_SCHEMA.md
+
+# OS specific
+Thumbs.db

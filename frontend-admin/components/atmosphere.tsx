@@ -1,11 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { t } from "@/lib/i18n"
 import { useTheme } from "@/lib/theme-context"
 
 export default function Atmosphere() {
-  const [isVisible, setIsVisible] = useState(false)
   const { language } = useTheme()
 
   const activities = [
@@ -46,20 +44,6 @@ export default function Atmosphere() {
     { src: "/acte_4_2.jpg", caption: t("atmosphere.photos.p3", language) },
   ]
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.1 },
-    )
-
-    const element = document.getElementById("atmosphere")
-    if (element) observer.observe(element)
-  }, [])
-
   return (
     <section id="atmosphere" className="w-full bg-[#0A0A0A] py-20 md:py-32 px-4 md:px-6">
       <div className="max-w-6xl mx-auto">
@@ -73,17 +57,15 @@ export default function Atmosphere() {
           {photos.map((photo, index) => (
             <div
               key={index}
-              className={`relative rounded-2xl overflow-hidden group cursor-pointer transition-all duration-500 flex-shrink-0 md:flex-shrink ${
-                isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-              }`}
-              style={{ transitionDelay: `${index * 0.15}s` }}
+              className="relative rounded-2xl overflow-hidden group cursor-pointer animate-fade-in-up flex-shrink-0 md:flex-shrink"
+              style={{ animationDelay: `${index * 0.15}s` }}
             >
               <img
                 src={photo.src || "/placeholder.svg"}
                 alt={photo.caption}
                 className="w-full h-64 md:h-80 object-cover group-hover:scale-110 transition-transform duration-500 rounded-2xl shadow-lg shadow-black/50"
               />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-[#DC143C]/40 transition-colors duration-300" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-[#FACC15]/40 transition-colors duration-300" />
               <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-4 rounded-b-2xl">
                 <p className="text-white font-medium text-sm md:text-base">{photo.caption}</p>
               </div>
@@ -96,10 +78,8 @@ export default function Atmosphere() {
           {activities.map((activity, index) => (
             <div
               key={index}
-              className={`bg-white/5 border border-white/10 rounded-2xl p-6 md:p-6 flex flex-col gap-4 transition-all duration-500 hover:border-[#DC143C]/50 ${
-                isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10"
-              }`}
-              style={{ transitionDelay: `${(index + 3) * 0.1}s` }}
+              className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-6 flex flex-col gap-4 animate-fade-in-up hover:border-[#FACC15]/50"
+              style={{ animationDelay: `${(index + 3) * 0.1}s` }}
             >
               <div className="text-4xl">{activity.icon}</div>
               <div>

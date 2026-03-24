@@ -47,7 +47,7 @@ export default function Footer() {
                 href="https://instagram.com/movieinthe.park"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#DC143C] transition-colors"
+                className="text-white hover:text-[#FACC15] transition-colors"
               >
                 <Instagram size={18} />
               </a>
@@ -56,7 +56,7 @@ export default function Footer() {
                 href="https://www.facebook.com/movieinthepark237"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#DC143C] transition-colors"
+                className="text-white hover:text-[#FACC15] transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -67,7 +67,7 @@ export default function Footer() {
                 href="https://www.tiktok.com/@movie_in_the_park237"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#DC143C] transition-colors"
+                className="text-white hover:text-[#FACC15] transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48" fill="currentColor">
                   <path d="M41,12.07a9.68,9.68,0,0,1-5.66-1.81A10.11,10.11,0,0,1,32.18,5H26V31.08a6.48,6.48,0,1,1-4.57-6.18V18.07a12.07,12.07,0,1,0,8.65,11.51V17.51A15.22,15.22,0,0,0,38,20a15.36,15.36,0,0,0,3-.3V13.61A9.86,9.86,0,0,1,41,12.07Z"/>
@@ -78,7 +78,7 @@ export default function Footer() {
                 href="https://chat.whatsapp.com/KXPxzuyO3SiC18g89JtKz9?mode=ac_t"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#DC143C] transition-colors"
+                className="text-white hover:text-[#FACC15] transition-colors"
               >
                 <MessageCircle size={18} />
               </a>
@@ -96,7 +96,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[#CCCCCC] hover:text-[#DC143C] transition-colors text-xs md:text-sm"
+                    className="text-[#CCCCCC] hover:text-[#FACC15] transition-colors text-xs md:text-sm"
                   >
                     {link.label}
                   </Link>
@@ -113,27 +113,27 @@ export default function Footer() {
 
             <ul className="space-y-2 lg:space-y-4 text-xs md:text-sm">
 
-              <li className="flex items-center gap-3 text-[#CCCCCC] hover:text-[#DC143C]">
-                <Phone size={14} className="text-[#DC143C]" />
+              <li className="flex items-center gap-3 text-[#CCCCCC] hover:text-[#FACC15]">
+                <Phone size={14} className="text-[#FACC15]" />
                 <a href="tel:+237697304450">{t("footer.contact.phone.number", language)}</a>
               </li>
 
-              <li className="flex items-center gap-3 text-[#CCCCCC] hover:text-[#DC143C]">
-                <Mail size={14} className="text-[#DC143C]" />
+              <li className="flex items-center gap-3 text-[#CCCCCC] hover:text-[#FACC15]">
+                <Mail size={14} className="text-[#FACC15]" />
                 <a href="mailto:matangabrooklyn@gmail.com">
                   {t("footer.contact.email.address", language)}
                 </a>
               </li>
 
-              <li className="flex items-center gap-3 text-[#CCCCCC] hover:text-[#DC143C]">
-                <MessageCircle size={14} className="text-[#DC143C]" />
+              <li className="flex items-center gap-3 text-[#CCCCCC] hover:text-[#FACC15]">
+                <MessageCircle size={14} className="text-[#FACC15]" />
                 <a href="https://wa.me/237697304450" target="_blank">
                   WhatsApp
                 </a>
               </li>
 
-              <li className="flex items-center gap-3 text-[#CCCCCC] hover:text-[#DC143C]">
-                <MapPin size={14} className="text-[#DC143C]" />
+              <li className="flex items-center gap-3 text-[#CCCCCC] hover:text-[#FACC15]">
+                <MapPin size={14} className="text-[#FACC15]" />
                 <a
                   href="https://www.google.com/maps/dir/?api=1&destination=3.876146,11.518691"
                   target="_blank"
@@ -162,10 +162,10 @@ export default function Footer() {
                 placeholder={t("footer.newsletter.placeholder", language)}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-[#999] focus:outline-none focus:border-[#DC143C]"
+                className="bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-[#999] focus:outline-none focus:border-[#FACC15]"
               />
               <a href="#">
-              <button className="bg-[#8B0000] hover:bg-[#DC143C] text-white px-4 py-2 rounded-lg text-xs md:text-sm">
+              <button className="bg-[#CA8A04] hover:bg-[#FACC15] text-white px-4 py-2 rounded-lg text-xs md:text-sm">
                 {t("footer.newsletter.button", language)}
               </button>
               </a>
@@ -181,10 +181,10 @@ export default function Footer() {
           <p>{t("footer.copyright.text", language)}</p>
 
           <div className="flex gap-4">
-            <Link href="/" className="hover:text-[#DC143C]">
+            <Link href="/" className="hover:text-[#FACC15]">
               {t("footer.copyright.legal", language)}
             </Link>
-            <Link href="/" className="hover:text-[#DC143C]">
+            <Link href="/" className="hover:text-[#FACC15]">
               {t("footer.copyright.privacy", language)}
             </Link>
           </div>
