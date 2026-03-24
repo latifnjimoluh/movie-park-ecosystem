@@ -6,7 +6,12 @@ const config = require("../config/database")
 const env = process.env.NODE_ENV || "development"
 const dbConfig = config[env]
 
-const sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
+let sequelize
+if (dbConfig.url || process.env.DATABASE_URL) {
+  sequelize = new Sequelize(dbConfig.url || process.env.DATABASE_URL, dbConfig)
+} else {
+  sequelize = new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, dbConfig)
+}
 
 const db = {}
 
