@@ -22,6 +22,12 @@ services:
         fromDatabase:
           name: movie-db
           property: connectionString
+      - key: FRONTEND_URL
+        value: https://movie-in-the-park-admin.onrender.com
+      - key: FRONTEND_URL2
+        value: https://movie-in-the-park-public.onrender.com
+      - key: FRONTEND_LOGIN_URL
+        value: https://movie-in-the-park-admin.onrender.com/admin/login
       - fromGroup: movie-common-secrets
 
   # ----------------------------------------------------------------------------
@@ -37,7 +43,7 @@ services:
     startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_API_HOST
-        value: https://movie-in-the-park-backend.onrender.com/api
+        value: https://movie-in-the-park-backend-4z89.onrender.com/api
       - key: NODE_VERSION
         value: 20.10.0
       - key: NODE_OPTIONS
@@ -56,7 +62,7 @@ services:
     startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        value: https://movie-in-the-park-backend.onrender.com/api
+        value: https://movie-in-the-park-backend-4z89.onrender.com/api
       - key: NODE_VERSION
         value: 20.10.0
       - key: NODE_OPTIONS
