@@ -19,6 +19,7 @@ interface Film {
   screening_time?: string
   display_order: number
   is_active: boolean
+  updatedAt?: string
 }
 
 const EMPTY_FORM = {

@@ -19,7 +19,9 @@ sequelize
     })
   })
   .catch((err) => {
-    logger.error("Failed to start server:", err)
+    logger.error("Failed to start server. Error details:")
+    logger.error(err.message || err)
+    if (err.stack) logger.error(err.stack)
     process.exit(1)
   })
 
