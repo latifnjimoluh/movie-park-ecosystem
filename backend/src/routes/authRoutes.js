@@ -7,6 +7,10 @@ const { validate, loginSchema } = require("../middlewares/validation")
 
 const router = express.Router()
 
+console.log("[AuthRoutes] Loading auth routes...")
+
+router.get("/test", (req, res) => res.json({ status: 200, message: "Auth router is working" }))
+
 // ---------------------- REGISTER ----------------------
 router.post("/register", async (req, res) => {
   try {
@@ -147,5 +151,13 @@ router.post("/logout", (req, res) => {
   res.clearCookie("refresh_token", COOKIE_OPTS)
   res.json({ status: 200, message: "Logout successful" })
 })
+
+// ---------------------- ROLES & PERMISSIONS ----------------------
+const roleController = require("../controllers/auth/roleController")
+const { checkPermission } = require("../middlewares/permissions")
+
+console.log("[AuthRoutes] Registering roles routes...")
+router.get("/roles", verifyToken, checkPermission("users.manage_permissions"), roleController.getAllRoles)
+router.put("/roles/:id/permissions", verifyToken, checkPermission("users.manage_permissions"), roleController.updateRolePermissions)
 
 module.exports = router

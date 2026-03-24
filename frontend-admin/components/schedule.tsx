@@ -12,27 +12,28 @@ export default function Schedule({ items }: { items: ScheduleItem[] }) {
     <div className="space-y-1">
       {items.map((item, index) => (
         <div key={index}>
-          <div className="flex gap-6 p-6 bg-[#0a0a0a] rounded-lg hover:bg-[#1a1a1a] transition-colors group">
+          <div className="schedule-item flex gap-6 p-6 rounded-lg transition-colors group">
             <div className="flex items-start gap-4 flex-1">
-              {/* Time */}
+
+              {/* Heure */}
               <div className="flex-shrink-0">
-                <div className="text-2xl font-bold text-[#FACC15] min-w-24">{item.time}</div>
+                <div className="schedule-time text-2xl font-bold min-w-24">{item.time}</div>
               </div>
 
-              {/* Vertical line and dot */}
+              {/* Ligne verticale + point */}
               <div className="flex flex-col items-center -ml-2">
-                <div className="w-4 h-4 bg-[#854D0E] rounded-full mt-2 group-hover:bg-[#FACC15] transition-colors" />
+                <div className="schedule-dot w-4 h-4 rounded-full mt-2 transition-colors" />
                 {index !== items.length - 1 && (
-                  <div className="w-1 bg-[#333333] flex-grow my-4 group-hover:bg-[#666666] transition-colors" />
+                  <div className="schedule-line w-1 flex-grow my-4 transition-colors" />
                 )}
               </div>
 
-              {/* Content */}
+              {/* Contenu */}
               <div className="flex-1 pt-1">
-                <h4 className="text-xl font-bold text-[#f8f8f8] mb-1">{item.title}</h4>
-                <p className="text-[#999999]">{item.description}</p>
+                <h4 className="schedule-title text-xl font-bold mb-1">{item.title}</h4>
+                <p className="schedule-desc">{item.description}</p>
                 {item.isTeaser && (
-                  <p className="text-[#999999] italic mt-2 text-sm">
+                  <p className="schedule-teaser italic mt-2 text-sm">
                     Un contenu spécial non annoncé pourrait être diffusé en fin de soirée…
                   </p>
                 )}
@@ -41,13 +42,12 @@ export default function Schedule({ items }: { items: ScheduleItem[] }) {
           </div>
 
           {item.isSurprise && (
-            <div className="flex gap-6 p-6 bg-[#1a1a1a] rounded-lg mt-1 hover:bg-[#222222] transition-colors">
+            <div className="schedule-extra-item flex gap-6 p-6 rounded-lg mt-1">
               <div className="flex items-start gap-4 flex-1 ml-14">
                 <div className="flex-1">
-                  <h4 className="text-xl font-bold text-[#f8f8f8] mb-1">✨ Moments surprises de la soirée</h4>
-                  <p className="text-[#999999]">
-                    Deux animations exclusives seront révélées uniquement aux participants. Préparez-vous à vivre une
-                    expérience inattendue.
+                  <h4 className="schedule-title text-xl font-bold mb-1">✨ Moments surprises de la soirée</h4>
+                  <p className="schedule-desc">
+                    Deux animations exclusives seront révélées uniquement aux participants. Préparez-vous à vivre une expérience inattendue.
                   </p>
                 </div>
               </div>
@@ -55,15 +55,14 @@ export default function Schedule({ items }: { items: ScheduleItem[] }) {
           )}
 
           {item.isAfter && (
-            <div className="flex gap-6 p-6 bg-[#1a1a1a] rounded-lg mt-1 hover:bg-[#222222] transition-colors">
+            <div className="schedule-extra-item flex gap-6 p-6 rounded-lg mt-1">
               <div className="flex items-start gap-4 flex-1 ml-14">
                 <div className="flex-1">
-                  <h4 className="text-xl font-bold text-[#f8f8f8] mb-1">
+                  <h4 className="schedule-title text-xl font-bold mb-1">
                     🌙 After Midnight – pour ceux qui veulent prolonger la soirée
                   </h4>
-                  <p className="text-[#999999]">
-                    Après 00h00, une session after est prévue avec musique, détente et ambiance chill pour ceux qui
-                    souhaitent rester.
+                  <p className="schedule-desc">
+                    Après 00h00, une session after est prévue avec musique, détente et ambiance chill pour ceux qui souhaitent rester.
                   </p>
                 </div>
               </div>

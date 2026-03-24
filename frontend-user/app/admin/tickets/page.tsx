@@ -91,11 +91,11 @@ export default function TicketsPage() {
         setTickets(result.data.tickets || [])
         setPagination(result.data.pagination)
       } else {
-        setError("Failed to load tickets")
+        setError("Impossible de charger les tickets")
       }
     } catch (err) {
       console.error("[v0] Error loading tickets:", err)
-      setError("Error loading tickets")
+      setError("Erreur lors du chargement des tickets")
     } finally {
       setIsLoading(false)
     }
@@ -151,11 +151,11 @@ export default function TicketsPage() {
         // Reload tickets to reflect any changes
         await loadTickets()
       } else {
-        setError(result.message || "Failed to regenerate ticket")
+        setError(result.message || "Impossible de régénérer le ticket")
       }
     } catch (err) {
       console.error("[v0] Error regenerating ticket:", err)
-      setError("Error regenerating ticket")
+      setError("Erreur lors de la régénération du ticket")
     } finally {
       setIsRegenerating(false)
     }
@@ -165,7 +165,7 @@ export default function TicketsPage() {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center py-12">
-          <p className="text-muted-foreground">Redirecting...</p>
+          <p className="text-muted-foreground">Redirection…</p>
         </div>
       </AdminLayout>
     )

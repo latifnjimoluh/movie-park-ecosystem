@@ -65,12 +65,37 @@ export default function CreateReservationPage() {
   }
 
   const handleAddParticipant = () => {
+    const selectedPack = packs.find((p) => p.id === selectedPackId)
+    if (selectedPack?.capacity && participants.length >= selectedPack.capacity) {
+      setError(`Le pack "${selectedPack.name}" est limité à ${selectedPack.capacity} personnes.`)
+      return
+    }
     setParticipants([...participants, { name: "" }])
+    setError(null)
+  }
+
+  const handlePackChange = (packId: string) => {
+    setSelectedPackId(packId)
+    setError(null)
+    
+    const pack = packs.find(p => p.id === packId)
+    if (pack?.capacity) {
+      // Ajuster le nombre de participants si nécessaire
+      if (participants.length > pack.capacity) {
+        setParticipants(participants.slice(0, pack.capacity))
+      } else if (participants.length < pack.capacity && pack.name.toLowerCase().includes("couple")) {
+        // Pour un pack couple, on peut pré-remplir pour avoir exactement 2
+        const needed = pack.capacity - participants.length
+        const extra = Array(needed).fill(null).map(() => ({ name: "" }))
+        setParticipants([...participants, ...extra])
+      }
+    }
   }
 
   const handleRemoveParticipant = (index: number) => {
     if (index > 0) {
       setParticipants(participants.filter((_, i) => i !== index))
+      setError(null)
     }
   }
 
@@ -107,16 +132,19 @@ export default function CreateReservationPage() {
         payeur_email: payerEmail,
         pack_id: selectedPackId,
         quantity,
-        participants: participants.map((p) => ({
-          name: p.name,
+        participants: participants.map((p, i) => ({
+          name: i === 0 ? payerName : p.name,
           email: p.email,
         })),
       }
 
+      const token = localStorage.getItem("admin_token")
       const response = await fetch(`${api.baseURL}/reservations`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(reservationData),
       })
@@ -178,20 +206,32 @@ export default function CreateReservationPage() {
                     type="text"
                     value={payerName}
                     onChange={(e) => setPayerName(e.target.value)}
-                    placeholder="Jean Dupont"
+                    placeholder="Anas Farid"
                     className="w-full px-4 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Téléphone *</label>
-                  <input
-                    type="tel"
-                    value={payerPhone}
-                    onChange={(e) => setPayerPhone(e.target.value)}
-                    placeholder="237 6 70 123 456"
-                    className="w-full px-4 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
-                  />
+                  <div className="flex gap-2">
+                    <div className="flex items-center justify-center px-3 bg-secondary border border-border rounded-md text-muted-foreground text-sm font-medium">
+                      +237
+                    </div>
+                    <input
+                      type="tel"
+                      maxLength={9}
+                      value={payerPhone}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "").slice(0, 9)
+                        setPayerPhone(val)
+                      }}
+                      placeholder="672475691"
+                      className="flex-1 px-4 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
+                    />
+                  </div>
+                  {payerPhone && payerPhone.length < 9 && (
+                    <p className="text-[10px] text-orange-500 mt-1 italic">9 chiffres requis ({payerPhone.length}/9)</p>
+                  )}
                 </div>
 
                 <div>
@@ -200,7 +240,7 @@ export default function CreateReservationPage() {
                     type="email"
                     value={payerEmail}
                     onChange={(e) => setPayerEmail(e.target.value)}
-                    placeholder="jean@example.com"
+                    placeholder="latifnjimoluh@gmail.com"
                     className="w-full px-4 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
                   />
                 </div>
@@ -218,14 +258,21 @@ export default function CreateReservationPage() {
                     {packs.map((pack) => (
                       <button
                         key={pack.id}
-                        onClick={() => setSelectedPackId(pack.id)}
+                        onClick={() => handlePackChange(pack.id)}
                         className={`p-4 rounded-lg border-2 transition-all text-left ${
                           selectedPackId === pack.id
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50"
                         }`}
                       >
-                        <p className="font-semibold text-foreground">{pack.name}</p>
+                        <div className="flex justify-between items-start">
+                          <p className="font-semibold text-foreground">{pack.name}</p>
+                          {pack.capacity && (
+                            <span className="text-[10px] bg-secondary px-1.5 py-0.5 rounded font-bold uppercase">
+                              {pack.capacity} pers.
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">{pack.price.toLocaleString()} XAF</p>
                         {pack.description && <p className="text-xs text-muted-foreground mt-1">{pack.description}</p>}
                       </button>
@@ -280,7 +327,7 @@ export default function CreateReservationPage() {
 
                     <input
                       type="text"
-                      value={participant.name}
+                      value={index === 0 ? payerName : participant.name}
                       onChange={(e) => handleUpdateParticipant(index, { name: e.target.value })}
                       placeholder="Nom complet"
                       disabled={index === 0}
@@ -291,7 +338,7 @@ export default function CreateReservationPage() {
                       type="email"
                       value={participant.email || ""}
                       onChange={(e) => handleUpdateParticipant(index, { email: e.target.value })}
-                      placeholder="Email (optionnel)"
+                      placeholder="latifnjimoluh@gmail.com"
                       className="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
                     />
                   </div>

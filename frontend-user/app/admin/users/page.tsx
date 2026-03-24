@@ -3,8 +3,16 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AdminLayout } from "@/components/admin/admin-layout"
-import { Plus, Trash2, CheckCircle, XCircle } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Plus, Trash2, CheckCircle, XCircle, Shield, Users } from "lucide-react"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogFooter 
+} from "@/components/ui/dialog"
+import { PermissionsMatrix } from "@/components/admin/permissions-matrix"
 
 interface AdminUser {
   id: string
@@ -75,6 +83,8 @@ export default function UsersPage() {
     setAdmins(admins.map((a) => (a.id === id ? { ...a, statut: a.statut === "actif" ? "inactif" : "actif" } : a)))
   }
 
+  const [activeTab, setActiveTab] = useState<"users" | "permissions">("users")
+
   if (isLoading || !isAuthenticated) return null
 
   const roles = ["SuperAdmin", "Comptabilité", "Contrôle Entrée", "Gestion Packs", "Lecture seule"]
@@ -82,81 +92,118 @@ export default function UsersPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Gestion des utilisateurs</h1>
-            <p className="text-muted-foreground">Gérez les administrateurs et leurs droits d'accès</p>
+            <h1 className="text-3xl font-bold text-foreground">Accès & Sécurité</h1>
+            <p className="text-muted-foreground">Gérez les administrateurs et configurez leurs droits d'accès</p>
           </div>
+          
+          {activeTab === "users" && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-accent text-primary-foreground rounded-lg font-medium transition-colors w-fit"
+            >
+              <Plus className="w-4 h-4" />
+              Ajouter un admin
+            </button>
+          )}
+        </div>
+
+        {/* Tabs Navigation */}
+        <div className="flex items-center gap-1 p-1 bg-muted/50 border border-border rounded-xl w-fit">
           <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-accent text-primary-foreground rounded-lg font-medium transition-colors"
+            onClick={() => setActiveTab("users")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === "users" 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
-            <Plus className="w-4 h-4" />
-            Ajouter un admin
+            <Users className="w-4 h-4" />
+            Liste des Admins
+          </button>
+          <button
+            onClick={() => setActiveTab("permissions")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === "permissions" 
+                ? "bg-background text-foreground shadow-sm" 
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Shield className="w-4 h-4" />
+            Matrice des Droits
           </button>
         </div>
 
-        {/* Admins Table */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr>
-                  <th className="text-left">Nom</th>
-                  <th className="text-left">Email</th>
-                  <th className="text-left">Rôle</th>
-                  <th className="text-left">Statut</th>
-                  <th className="text-left">Dernière connexion</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {admins.map((admin) => (
-                  <tr key={admin.id}>
-                    <td className="font-medium text-foreground">{admin.nom}</td>
-                    <td className="text-muted-foreground">{admin.email}</td>
-                    <td>
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-900">
-                        {admin.role}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        {admin.statut === "actif" ? (
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        ) : (
-                          <XCircle className="w-4 h-4 text-red-600" />
-                        )}
-                        <span className="text-foreground">{admin.statut === "actif" ? "Actif" : "Inactif"}</span>
-                      </div>
-                    </td>
-                    <td className="text-muted-foreground">{admin.derniere_connexion}</td>
-                    <td className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleToggleStatus(admin.id)}
-                          className="p-1 hover:bg-secondary rounded transition-colors"
-                        >
-                          {admin.statut === "actif" ? (
-                            <XCircle className="w-4 h-4 text-orange-600" />
-                          ) : (
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAdmin(admin.id)}
-                          className="p-1 hover:bg-red-500/20 rounded transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </button>
-                      </div>
-                    </td>
+        {activeTab === "users" ? (
+          /* Admins Table */
+          <div className="bg-card border border-border rounded-lg overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/30 border-b border-border">
+                    <th className="p-4 text-left font-semibold text-muted-foreground">Nom</th>
+                    <th className="p-4 text-left font-semibold text-muted-foreground">Adresse e-mail</th>
+                    <th className="p-4 text-left font-semibold text-muted-foreground">Rôle</th>
+                    <th className="p-4 text-left font-semibold text-muted-foreground">Statut</th>
+                    <th className="p-4 text-left font-semibold text-muted-foreground">Dernière connexion</th>
+                    <th className="p-4 text-right font-semibold text-muted-foreground">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {admins.map((admin) => (
+                    <tr key={admin.id} className="hover:bg-muted/10 transition-colors">
+                      <td className="p-4 font-medium text-foreground">{admin.nom}</td>
+                      <td className="p-4 text-muted-foreground">{admin.email}</td>
+                      <td className="p-4">
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight bg-blue-100 text-blue-900 border border-blue-200">
+                          {admin.role}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          {admin.statut === "actif" ? (
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <XCircle className="w-4 h-4 text-red-600" />
+                          )}
+                          <span className="text-foreground capitalize">{admin.statut}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-muted-foreground">{admin.derniere_connexion}</td>
+                      <td className="p-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleToggleStatus(admin.id)}
+                            title={admin.statut === "actif" ? "Désactiver" : "Activer"}
+                            className="p-1.5 hover:bg-secondary rounded-md transition-colors"
+                          >
+                            {admin.statut === "actif" ? (
+                              <XCircle className="w-4 h-4 text-orange-600" />
+                            ) : (
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAdmin(admin.id)}
+                            title="Supprimer"
+                            className="p-1.5 hover:bg-red-500/10 rounded-md transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <PermissionsMatrix />
+          </div>
+        )}
       </div>
 
       {/* Add Admin Modal */}
@@ -164,6 +211,9 @@ export default function UsersPage() {
         <DialogContent className="bg-card border border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">Ajouter un administrateur</DialogTitle>
+            <DialogDescription>
+              Créez un nouveau compte administrateur en remplissant les informations ci-dessous.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -173,18 +223,18 @@ export default function UsersPage() {
                 type="text"
                 value={newAdmin.nom}
                 onChange={(e) => setNewAdmin({ ...newAdmin, nom: e.target.value })}
-                placeholder="Jean Dupont"
+                placeholder="Anas Farid"
                 className="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Adresse e-mail</label>
               <input
                 type="email"
                 value={newAdmin.email}
                 onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
-                placeholder="jean@moviepark.cm"
+                placeholder="latifnjimoluh@gmail.com"
                 className="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
               />
             </div>

@@ -138,6 +138,13 @@ export const api = {
     },
   },
 
+  // ---------- ROLES & PERMISSIONS ----------
+  roles: {
+    getAll: () => request("GET", "/auth/roles"),
+    updatePermissions: (roleId: string, permissions: string[]) => 
+      request("PUT", `/auth/roles/${roleId}/permissions`, { permissions }),
+  },
+
   // ---------- PACKS ----------
   packs: {
     getAll: () => request("GET", "/packs"),
@@ -193,5 +200,42 @@ export const api = {
   // ---------- AUDIT ----------
   audit: {
     getAll: (params = "") => request("GET", `/audit${params}`),
+  },
+
+  // ---------- FILMS ----------
+  films: {
+    getAll: (params = "") => request("GET", `/films${params}`),
+    getOne: (id: string) => request("GET", `/films/${id}`),
+    create: (data: any) => request("POST", "/films", data),
+    update: (id: string, data: any) => request("PUT", `/films/${id}`, data),
+    delete: (id: string) => request("DELETE", `/films/${id}`),
+  },
+
+  // ---------- SCHEDULE ----------
+  schedule: {
+    getAll: (params = "") => request("GET", `/schedule${params}`),
+    getOne: (id: string) => request("GET", `/schedule/${id}`),
+    create: (data: any) => request("POST", "/schedule", data),
+    update: (id: string, data: any) => request("PUT", `/schedule/${id}`, data),
+    delete: (id: string) => request("DELETE", `/schedule/${id}`),
+  },
+
+  // ---------- TESTIMONIALS ----------
+  testimonials: {
+    getAll: (params = "") => request("GET", `/testimonials${params}`),
+    getOne: (id: string) => request("GET", `/testimonials/${id}`),
+    create: (data: any) => request("POST", "/testimonials", data),
+    update: (id: string, data: any) => request("PUT", `/testimonials/${id}`, data),
+    delete: (id: string) => request("DELETE", `/testimonials/${id}`),
+  },
+
+  // ---------- EVENT CONFIG ----------
+  eventConfig: {
+    getAll: () => request("GET", "/event-config"),
+    upsert: (key: string, value: string, type?: string, label?: string, group?: string) =>
+      request("POST", "/event-config/upsert", { key, value, type, label, group }),
+    bulkUpsert: (configs: Array<{ key: string; value: string; type?: string; label?: string; group?: string }>) =>
+      request("POST", "/event-config/bulk", { configs }),
+    delete: (id: string) => request("DELETE", `/event-config/${id}`),
   },
 }

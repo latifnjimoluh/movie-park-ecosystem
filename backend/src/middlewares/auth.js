@@ -9,8 +9,12 @@ const COOKIE_OPTS = {
 
 const verifyToken = (req, res, next) => {
   try {
-    // Cookie httpOnly prioritaire (XSS-safe), fallback Authorization header
-    const token = req.cookies?.access_token || req.headers.authorization?.split(" ")[1]
+    // Cookie httpOnly prioritaire, fallback Authorization header, fallback Query String (pour les téléchargements)
+    const token = 
+      req.cookies?.access_token || 
+      req.headers.authorization?.split(" ")[1] ||
+      req.query?.token
+    
     if (!token) {
       return res.status(401).json({ status: 401, message: "No token provided" })
     }

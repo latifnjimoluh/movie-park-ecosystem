@@ -27,6 +27,11 @@ const userRoutes = require("./routes/userRoutes")
 const auditRoutes = require("./routes/auditRoutes")
 const contactRoutes = require("./routes/contactRoutes")
 const trackingRoutes = require("./routes/trackingRoutes")
+// Contenu dynamique
+const filmRoutes = require("./routes/filmRoutes")
+const scheduleRoutes = require("./routes/scheduleRoutes")
+const testimonialRoutes = require("./routes/testimonialRoutes")
+const eventConfigRoutes = require("./routes/eventConfigRoutes")
 
 const errorHandler = require("./middlewares/errorHandler")
 
@@ -109,6 +114,11 @@ app.use("/api/users", userRoutes)
 app.use("/api/audit", auditRoutes)
 app.use("/api/contact", contactRoutes)
 app.use("/api/track", trackingRoutes)
+// Contenu dynamique
+app.use("/api/films", filmRoutes)
+app.use("/api/schedule", scheduleRoutes)
+app.use("/api/testimonials", testimonialRoutes)
+app.use("/api/event-config", eventConfigRoutes)
 
 // ============================================
 // HEALTH CHECK

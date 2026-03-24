@@ -10,70 +10,57 @@ import { useTheme } from "@/lib/theme-context"
 
 export default function TrackingPage() {
   const [trackingPhone, setTrackingPhone] = useState("")
-  const [submitted, setSubmitted] = useState(false)
-
-  const { language } = useTheme()
+  const [submitted, setSubmitted]         = useState(false)
+  const { language }                      = useTheme()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (trackingPhone.trim()) {
-      setSubmitted(true)
-    }
+    if (trackingPhone.trim()) setSubmitted(true)
   }
 
   return (
     <main className="w-full">
       <Header />
 
-      <section className="bg-gradient-to-br from-[#0a0a0a] to-[#1a0a0a] py-16 px-6 min-h-screen">
+      <section className="page-hero py-16 px-6 min-h-screen">
         <div className="max-w-3xl mx-auto">
 
-          {/* TITLE + SUBTITLE */}
           <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl font-bold text-[#f8f8f8] mb-4">
+            <span className="films-badge inline-block px-3 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase mb-4">
+              🔍 Suivi
+            </span>
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
               {t("tracking.title", language)}
             </h1>
-
-            <p className="text-xl text-[#cccccc]">
+            <p className="films-desc text-xl">
               {t("tracking.subtitle", language)}
             </p>
           </div>
 
-          {/* SEARCH FORM */}
           {!submitted ? (
-            <div className="bg-[#121212] rounded-lg p-8 border border-[#333333]">
-
+            <div className="tracking-form-card rounded-xl p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
-
                 <div>
-                  <label className="block text-[#f8f8f8] font-semibold mb-2">
+                  <label className="contact-label block font-semibold mb-2">
                     {t("tracking.phoneLabel", language)}
                   </label>
-
                   <input
                     type="tel"
                     value={trackingPhone}
                     onChange={(e) => setTrackingPhone(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#0a0a0a] border border-[#333333] rounded-lg text-[#f8f8f8] placeholder-[#666666] focus:outline-none focus:border-[#a00000] focus:ring-1 focus:ring-[#a00000]"
+                    className="contact-input w-full px-4 py-3 rounded-lg"
                     placeholder={t("tracking.phonePlaceholder", language)}
                   />
                 </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-[#a00000] hover:bg-[#cc0000] text-white py-4 rounded-lg font-semibold transition-colors text-lg"
-                >
+                <button type="submit" className="header-cta-btn w-full py-4 rounded-xl font-semibold text-lg">
                   {t("tracking.searchButton", language)}
                 </button>
-
               </form>
             </div>
           ) : (
-            <ReservationTracking
-              phone={trackingPhone}
-              onReset={() => setSubmitted(false)}
-            />
+            <ReservationTracking phone={trackingPhone} onReset={() => setSubmitted(false)} />
           )}
+
         </div>
       </section>
 

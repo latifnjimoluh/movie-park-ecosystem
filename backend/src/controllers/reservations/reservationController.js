@@ -125,6 +125,16 @@ module.exports = {
       })
     }
 
+    // ✅ Validation du nombre de participants par rapport à la capacité du pack
+    // Le payeur compte pour 1, plus les participants additionnels
+    const totalParticipants = 1 + (participants?.length || 0)
+    if (pack.capacity && totalParticipants > pack.capacity) {
+      return res.status(400).json({
+        status: 400,
+        message: `Le pack "${pack.name}" est limité à ${pack.capacity} personne(s). Vous avez renseigné ${totalParticipants} personnes (payeur + ${participants?.length || 0} participants).`,
+      })
+    }
+
     const total_price = pack.price
     const reservation = await Reservation.create({
       payeur_name,

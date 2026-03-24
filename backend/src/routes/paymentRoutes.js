@@ -127,6 +127,14 @@ router.post(
       })
     }
 
+    // ✅ Exiger une preuve pour les paiements Mobile Money
+    if ((method === "momo" || method === "orange") && !req.file) {
+      return res.status(400).json({
+        status: 400,
+        message: `Une preuve de paiement (capture d'écran ou PDF) est obligatoire pour les paiements via ${method === "momo" ? "Mobile Money" : "Orange Money"}.`,
+      })
+    }
+
     try {
       // Ajout du paiement
       const result = await addPayment(

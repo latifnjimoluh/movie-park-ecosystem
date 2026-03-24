@@ -4,7 +4,14 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AdminLayout } from "@/components/admin/admin-layout"
 import { Edit2, Plus, Trash2 } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogFooter 
+} from "@/components/ui/dialog"
 import { api } from "@/lib/api"
 
 interface Pack {
@@ -51,11 +58,11 @@ export default function PacksPage() {
         const packsList = result.data.packs || result.data
         setPacks(Array.isArray(packsList) ? packsList : [])
       } else {
-        setError("Failed to load packs")
+        setError("Impossible de charger les packs")
       }
     } catch (err) {
       console.error("[v0] Error loading packs:", err)
-      setError("Error loading packs")
+      setError("Erreur lors du chargement des packs")
     } finally {
       setIsLoading(false)
     }
@@ -104,15 +111,15 @@ export default function PacksPage() {
       const result = await response.json()
 
       if (result.status === 200) {
-        setSuccess("Pack updated successfully")
+        setSuccess("Pack mis à jour avec succès")
         await loadPacks()
         setShowEditModal(false)
       } else {
-        setError(result.message || "Failed to update pack")
+        setError(result.message || "Impossible de mettre à jour le pack")
       }
     } catch (err) {
       console.error("[v0] Error updating pack:", err)
-      setError("Error updating pack")
+      setError("Erreur lors de la mise à jour du pack")
     } finally {
       setIsSaving(false)
     }
@@ -120,7 +127,7 @@ export default function PacksPage() {
 
   const handleCreatePack = async () => {
     if (!editData.name || !editData.price) {
-      setError("Name and price are required")
+      setError("Le nom et le prix sont obligatoires")
       return
     }
 
@@ -147,15 +154,15 @@ export default function PacksPage() {
       const result = await response.json()
 
       if (result.status === 201) {
-        setSuccess("Pack created successfully")
+        setSuccess("Pack créé avec succès")
         await loadPacks()
         setShowCreateModal(false)
       } else {
-        setError(result.message || "Failed to create pack")
+        setError(result.message || "Impossible de créer le pack")
       }
     } catch (err) {
       console.error("[v0] Error creating pack:", err)
-      setError("Error creating pack")
+      setError("Erreur lors de la création du pack")
     } finally {
       setIsSaving(false)
     }
@@ -191,7 +198,7 @@ export default function PacksPage() {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center py-12">
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Chargement…</p>
         </div>
       </AdminLayout>
     )
@@ -203,7 +210,7 @@ export default function PacksPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Gestion des packs</h1>
-            <p className="text-muted-foreground">Modifiez, créez ou supprimez les packs</p>
+            <p className="text-muted-foreground">Modifiez, créez ou suppmisez les packs</p>
           </div>
           <button
             onClick={handleCreateClick}
@@ -280,6 +287,9 @@ export default function PacksPage() {
         <DialogContent className="bg-card border border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">Modifier {selectedPack?.name}</DialogTitle>
+            <DialogDescription>
+              Modifiez les détails du pack ci-dessous. Cliquez sur enregistrer pour valider.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -297,8 +307,13 @@ export default function PacksPage() {
               <label className="block text-sm font-medium text-foreground mb-2">Prix (XAF)</label>
               <input
                 type="number"
+                min="0"
                 value={editData.price}
-                onChange={(e) => setEditData({ ...editData, price: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (Number(val) < 0) return
+                  setEditData({ ...editData, price: val })
+                }}
                 className="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
               />
             </div>
@@ -317,8 +332,13 @@ export default function PacksPage() {
               <label className="block text-sm font-medium text-foreground mb-2">Capacité (optionnel)</label>
               <input
                 type="number"
+                min="0"
                 value={editData.capacity}
-                onChange={(e) => setEditData({ ...editData, capacity: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (Number(val) < 0) return
+                  setEditData({ ...editData, capacity: val })
+                }}
                 className="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
               />
             </div>
@@ -347,6 +367,9 @@ export default function PacksPage() {
         <DialogContent className="bg-card border border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">Créer un nouveau pack</DialogTitle>
+            <DialogDescription>
+              Remplissez les informations ci-dessous pour ajouter un nouveau pack d'entrée.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -365,8 +388,13 @@ export default function PacksPage() {
               <label className="block text-sm font-medium text-foreground mb-2">Prix (XAF) *</label>
               <input
                 type="number"
+                min="0"
                 value={editData.price}
-                onChange={(e) => setEditData({ ...editData, price: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (Number(val) < 0) return
+                  setEditData({ ...editData, price: val })
+                }}
                 className="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
                 placeholder="0"
               />
@@ -387,8 +415,13 @@ export default function PacksPage() {
               <label className="block text-sm font-medium text-foreground mb-2">Capacité (optionnel)</label>
               <input
                 type="number"
+                min="0"
                 value={editData.capacity}
-                onChange={(e) => setEditData({ ...editData, capacity: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (Number(val) < 0) return
+                  setEditData({ ...editData, capacity: val })
+                }}
                 className="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50"
                 placeholder="Nombre de participants"
               />
@@ -418,6 +451,9 @@ export default function PacksPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Supprimer le pack</DialogTitle>
+            <DialogDescription>
+              Cette action est irréversible. Le pack sera définitivement supprimé du système.
+            </DialogDescription>
           </DialogHeader>
           <p className="text-sm text-muted-foreground py-4">
             Êtes-vous sûr de vouloir supprimer le pack{" "}

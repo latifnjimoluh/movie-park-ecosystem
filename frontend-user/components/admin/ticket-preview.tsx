@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Download, Loader2, AlertCircle, Sparkles } from "lucide-react"
+import { Download, Loader2, Sparkles } from "lucide-react"
 
 interface TicketPreviewProps {
   ticketNumber: string
@@ -21,8 +21,7 @@ export function TicketPreview({
 }: TicketPreviewProps) {
   const canvasRef  = useRef<HTMLCanvasElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [isLoading, setIsLoading]   = useState(true)
-  const [error, setError]           = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   const getTemplateImage = (pack: string): string => {
     if (!pack) return "/simple.jpg"
@@ -38,42 +37,58 @@ export function TicketPreview({
       if (!canvasRef.current) return
 
       setIsLoading(true)
-      setError(null)
 
       try {
         const ctx = canvasRef.current.getContext("2d")
         if (!ctx) throw new Error("Could not get canvas context")
 
-        // Load images
-        const templateSrc = getTemplateImage(packName)
-        const templateImg = new Image()
-        templateImg.crossOrigin = "anonymous"
-        templateImg.src = templateSrc
+        // Charger une image depuis une URL, retourne null en cas d'échec (silencieux)
+        const loadImg = (src: string): Promise<HTMLImageElement | null> =>
+          new Promise((resolve) => {
+            const img = new Image()
+            img.onload  = () => resolve(img)
+            img.onerror = () => resolve(null)   // fallback silencieux
+            img.src = src
+            if (img.complete) resolve(img.naturalWidth > 0 ? img : null)
+          })
 
-        const qrImg = new Image()
-        qrImg.crossOrigin = "anonymous"
-        qrImg.src = qrDataUrl
+        // Template via fetch→blob (évite les problèmes CORS de cache)
+        let templateImg: HTMLImageElement | null = null
+        try {
+          const templateSrc  = getTemplateImage(packName)
+          const res          = await fetch(templateSrc)
+          if (res.ok) {
+            const blob    = await res.blob()
+            const blobUrl = URL.createObjectURL(blob)
+            templateImg   = await loadImg(blobUrl)
+            URL.revokeObjectURL(blobUrl)
+          }
+        } catch {
+          // Template introuvable → fallback gradient
+        }
 
-        await Promise.all([
-          new Promise<void>((resolve, reject) => {
-            templateImg.onload  = () => resolve()
-            templateImg.onerror = () => reject(new Error("Failed to load template image"))
-          }),
-          new Promise<void>((resolve, reject) => {
-            qrImg.onload  = () => resolve()
-            qrImg.onerror = () => reject(new Error("Failed to load QR code"))
-          }),
-        ])
+        // QR code (data URL, ne peut pas échouer)
+        const qrImg = await loadImg(qrDataUrl)
+        if (!qrImg) throw new Error("QR code invalide")
 
-        // Canvas dimensions
-        const width  = templateImg.naturalWidth  || templateImg.width  || 1200
-        const height = templateImg.naturalHeight || templateImg.height || 400
+        // Dimensions — si le template a chargé on suit ses dimensions, sinon on fixe 1200×400
+        const width  = templateImg ? (templateImg.naturalWidth  || templateImg.width  || 1200) : 1200
+        const height = templateImg ? (templateImg.naturalHeight || templateImg.height || 400)  : 400
 
         canvasRef.current.width  = width
         canvasRef.current.height = height
 
-        // Draw template
-        ctx.drawImage(templateImg, 0, 0, width, height)
+        // Fond : template ou gradient sombre de secours
+        if (templateImg) {
+          ctx.drawImage(templateImg, 0, 0, width, height)
+        } else {
+          // Dégradé de secours identique au thème de l'app
+          const grad = ctx.createLinearGradient(0, 0, width, height)
+          grad.addColorStop(0, "#0a0a1a")
+          grad.addColorStop(1, "#1a1025")
+          ctx.fillStyle = grad
+          ctx.fillRect(0, 0, width, height)
+        }
 
         // ── Golden Easter overlay ───────────────────────────────────────────
         // Dark vignette for readability
@@ -199,8 +214,8 @@ export function TicketPreview({
         const dataUrl = canvasRef.current.toDataURL("image/png")
         setPreviewUrl(dataUrl)
       } catch (err) {
-        console.error("[TicketPreview] Error:", err)
-        setError(err instanceof Error ? err.message : "Failed to generate ticket preview")
+        // Erreur critique (ex: canvas indisponible, QR invalide) — log silencieux
+        console.warn("[TicketPreview]", err)
       } finally {
         setIsLoading(false)
       }
@@ -242,19 +257,6 @@ export function TicketPreview({
               Génération du ticket d&apos;or…
             </p>
           </div>
-        </div>
-      ) : error ? (
-        <div
-          className="p-4 rounded-xl flex items-start gap-3"
-          style={{
-            background: "rgba(239,68,68,0.08)",
-            border: "1px solid rgba(239,68,68,0.25)",
-          }}
-        >
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#FCA5A5" }} />
-          <p className="text-sm" style={{ color: "#FCA5A5" }}>
-            {error}
-          </p>
         </div>
       ) : previewUrl ? (
         <div className="space-y-3">

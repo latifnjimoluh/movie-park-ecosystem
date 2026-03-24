@@ -28,8 +28,16 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
       },
       role: {
-        type: DataTypes.ENUM("superadmin", "admin", "cashier", "scanner"),
+        type: DataTypes.STRING,
         defaultValue: "cashier",
+      },
+      role_id: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: "roles",
+          key: "id",
+        },
       },
       last_login: {
         type: DataTypes.DATE,

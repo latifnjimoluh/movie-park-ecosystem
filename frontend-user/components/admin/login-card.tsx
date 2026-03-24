@@ -46,7 +46,7 @@ export function LoginCard({ onLogin, isLoading, error }: LoginCardProps) {
       <div className="bg-[#121212] rounded-lg p-8 border border-red-900/30 shadow-2xl">
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-[#F8F8F8] mb-2">Admin Login</h1>
+          <h1 className="text-3xl font-bold text-[#F8F8F8] mb-2">Connexion Administrateur</h1>
           <p className="text-gray-400">Movie in the Park</p>
         </div>
 
@@ -55,7 +55,7 @@ export function LoginCard({ onLogin, isLoading, error }: LoginCardProps) {
           {/* Email Field */}
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-medium text-[#F8F8F8]">
-              Email
+              Adresse e-mail
             </label>
             <input
               id="email"

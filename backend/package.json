@@ -9,6 +9,7 @@
     "migrate": "sequelize-cli db:migrate",
     "migrate:undo": "sequelize-cli db:migrate:undo:all",
     "seed": "sequelize-cli db:seed:all",
+    "seed:content": "node src/seeders/seed-content.js",
     "test": "jest --runInBand",
     "lint": "eslint src"
   },

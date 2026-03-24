@@ -7,7 +7,7 @@ const logger = require("../config/logger")
 const path = require("path")
 const fs = require("fs")
 const jwt = require("jsonwebtoken")
-const { auditService } = require("../services/auditService")
+const auditService = require("../services/auditService")
 
 const router = express.Router()
 
@@ -29,13 +29,12 @@ const allowedOrigins = [
 ]
 
 const setCorsHeaders = (res, origin) => {
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin)
-    res.setHeader("Access-Control-Allow-Credentials", "true")
-    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST")
-    res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type")
-    res.setHeader("Access-Control-Expose-Headers", "Content-Disposition, Content-Type, Content-Length")
-  }
+  const finalOrigin = origin || process.env.FRONTEND_URL || "http://localhost:3002"
+  res.setHeader("Access-Control-Allow-Origin", finalOrigin)
+  res.setHeader("Access-Control-Allow-Credentials", "true")
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST")
+  res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept")
+  res.setHeader("Access-Control-Expose-Headers", "Content-Disposition, Content-Type, Content-Length")
 }
 
 // ============================================
@@ -212,49 +211,14 @@ router.options("/:id/preview", (req, res) => {
   res.sendStatus(204)
 })
 
-router.get("/:id/preview", async (req, res) => {
+router.get("/:id/preview", verifyToken, async (req, res) => {
   try {
     const { id } = req.params
-    const { token } = req.query
-
     console.log("[Preview] Preview endpoint called - ticket id:", id)
 
     // CORS Headers
     const origin = req.headers.origin
     setCorsHeaders(res, origin)
-
-    // ✅ Vérifier le token (depuis query string OU header)
-    const authToken = token || req.headers.authorization?.replace("Bearer ", "")
-
-    if (!authToken) {
-      console.log("[Preview] No token provided")
-      return res.status(401).json({
-        status: 401,
-        message: "Token manquant",
-      })
-    }
-
-    // ✅ Valider le token
-    try {
-      const decoded = jwt.verify(authToken, process.env.JWT_SECRET)
-
-      // Si c'est un token de preview, vérifier qu'il correspond au ticket
-      if (decoded.type === "preview" && decoded.ticketId !== id) {
-        console.log("[Preview] Token ticket ID mismatch")
-        return res.status(403).json({
-          status: 403,
-          message: "Token invalide pour ce ticket",
-        })
-      }
-
-      console.log("[Preview] Token valid for user:", decoded.userId || decoded.id)
-    } catch (err) {
-      console.error("[Preview] Token validation failed:", err.message)
-      return res.status(401).json({
-        status: 401,
-        message: "Token invalide ou expiré",
-      })
-    }
 
     const ticket = await Ticket.findByPk(id)
 
@@ -275,15 +239,17 @@ router.get("/:id/preview", async (req, res) => {
     }
 
     const stats = fs.statSync(pdfPath)
-    console.log("[Preview] PDF file size:", stats.size, "bytes")
 
-    // ✅ inline au lieu de attachment = pas de téléchargement forcé
+    // ✅ Forcer l'affichage dans le navigateur (inline)
     res.setHeader("Content-Type", "application/pdf")
     res.setHeader("Content-Disposition", "inline")
     res.setHeader("Content-Length", stats.size)
-    res.setHeader("Cache-Control", "private, max-age=3600")
+    
+    // Empêcher l'interception agressive par certains plugins
+    res.setHeader("X-Content-Type-Options", "nosniff")
+    res.setHeader("Cache-Control", "private, no-cache, no-store, must-revalidate")
 
-    console.log("[Preview] Streaming PDF for preview")
+    console.log("[Preview] Streaming PDF for inline preview")
 
     const stream = fs.createReadStream(pdfPath)
     stream.pipe(res)
@@ -297,14 +263,7 @@ router.get("/:id/preview", async (req, res) => {
   } catch (err) {
     console.error("[Preview] Error:", err)
     logger.error("Error loading PDF preview:", err)
-
-    const origin = req.headers.origin
-    setCorsHeaders(res, origin)
-
-    res.status(500).json({
-      status: 500,
-      message: "Failed to load PDF preview",
-    })
+    res.status(500).json({ status: 500, message: "Failed to load PDF preview" })
   }
 })
 
@@ -512,7 +471,7 @@ router.post("/:reservationId/generate", verifyToken, checkPermission("tickets.ge
       result.ticket.pdf_url = buildUrl(req, result.ticket.pdf_url)
     }
 
-    await auditService.log({
+    auditService.log({
       userId: req.user.id,
       action: "ticket.generate",
       resourceType: "ticket",
@@ -525,7 +484,7 @@ router.post("/:reservationId/generate", verifyToken, checkPermission("tickets.ge
       description: `Ticket ${result.ticket.ticket_number} généré pour la réservation ${reservationId}`,
       ipAddress: req.ip,
       userAgent: req.get("user-agent"),
-    })
+    }).catch((logErr) => logger.error("Failed to log ticket generation:", logErr))
 
     res.status(201).json({
       status: 201,

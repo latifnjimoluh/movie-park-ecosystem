@@ -37,7 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className="font-sans antialiased bg-[#0A0A0A] text-[#F8F8F8]">
+      <body className="font-sans antialiased bg-[#0E0520] text-[#F9F5FF]">
         <AppThemeProvider>
           <TrackingWrapper>
             {children}

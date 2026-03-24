@@ -1,91 +1,43 @@
 "use client"
 
+import type React from "react"
+
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AdminLayout } from "@/components/admin/admin-layout"
-import { Search, Filter, ChevronRight } from "lucide-react"
+import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react"
+import { api } from "@/lib/api"
 
 interface Payment {
   id: string
   nomPayeur: string
   telephone: string
   montant: number
-  mode: "MoMo" | "Cash"
+  mode: string
   date: string
   admin: string
   reservationId: string
 }
 
-const mockPayments: Payment[] = [
-  {
-    id: "p1",
-    nomPayeur: "Jean Dupont",
-    telephone: "237 6 70 123 456",
-    montant: 25000,
-    mode: "MoMo",
-    date: "2024-11-27",
-    admin: "Admin Asso",
-    reservationId: "1",
-  },
-  {
-    id: "p2",
-    nomPayeur: "Marie Simo",
-    telephone: "237 6 75 789 012",
-    montant: 60000,
-    mode: "Cash",
-    date: "2024-11-26",
-    admin: "Admin Jean",
-    reservationId: "2",
-  },
-  {
-    id: "p3",
-    nomPayeur: "Pierre Ndong",
-    telephone: "237 6 80 345 678",
-    montant: 80000,
-    mode: "MoMo",
-    date: "2024-11-25",
-    admin: "Admin Asso",
-    reservationId: "3",
-  },
-  {
-    id: "p4",
-    nomPayeur: "Sophie Asso",
-    telephone: "237 6 85 901 234",
-    montant: 25000,
-    mode: "Cash",
-    date: "2024-11-24",
-    admin: "Admin Jean",
-    reservationId: "4",
-  },
-  {
-    id: "p5",
-    nomPayeur: "André Fouda",
-    telephone: "237 6 90 567 890",
-    montant: 30000,
-    mode: "MoMo",
-    date: "2024-11-23",
-    admin: "Admin Asso",
-    reservationId: "5",
-  },
-  {
-    id: "p6",
-    nomPayeur: "Jean Dupont",
-    telephone: "237 6 70 123 456",
-    montant: 25000,
-    mode: "MoMo",
-    date: "2024-11-22",
-    admin: "Admin Jean",
-    reservationId: "1",
-  },
-]
+interface PaginationData {
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+const PAGE_SIZE = 10
 
 export default function PaymentsPage() {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [payments, setPayments] = useState<Payment[]>([])
+  const [pagination, setPagination] = useState<PaginationData>({ total: 0, page: 1, pageSize: PAGE_SIZE, totalPages: 0 })
+  const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState("")
   const [modeFilter, setModeFilter] = useState<string>("tous")
-  const [filteredPayments, setFilteredPayments] = useState<Payment[]>([])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem("admin_token")
@@ -93,29 +45,104 @@ export default function PaymentsPage() {
       router.push("/admin/login")
     } else {
       setIsAuthenticated(true)
-      setIsLoading(false)
     }
   }, [router])
 
   useEffect(() => {
-    let result = mockPayments
-
-    if (search) {
-      result = result.filter(
-        (p) => p.nomPayeur.toLowerCase().includes(search.toLowerCase()) || p.telephone.includes(search),
-      )
+    if (isAuthenticated) {
+      loadPayments()
     }
+  }, [isAuthenticated, currentPage, modeFilter])
 
-    if (modeFilter !== "tous") {
-      result = result.filter((p) => p.mode === modeFilter)
+  const loadPayments = async () => {
+    try {
+      setError(null)
+      setIsLoading(true)
+
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        pageSize: PAGE_SIZE.toString(),
+        ...(search && { q: search }),
+      })
+
+      const response = await fetch(`${api.baseURL}/payments?${params}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("admin_token")}` },
+      })
+
+      const result = await response.json()
+
+      if (result.status === 200) {
+        const raw = result.data?.payments ?? []
+        const pag = result.data?.pagination ?? { total: raw.length, page: 1, pageSize: PAGE_SIZE, totalPages: Math.ceil(raw.length / PAGE_SIZE) }
+
+        const mapped: Payment[] = raw.map((p: any) => ({
+          id: p.id,
+          nomPayeur: p.reservation?.payeur_name ?? "—",
+          telephone: p.reservation?.payeur_phone ?? "—",
+          montant: p.amount,
+          mode: p.method,
+          date: new Date(p.createdAt).toLocaleDateString("fr-FR"),
+          admin: p.creator?.name ?? "—",
+          reservationId: p.reservation_id,
+        }))
+
+        setPayments(mapped)
+        setPagination(pag)
+      } else {
+        setError("Impossible de charger les paiements")
+      }
+    } catch (err) {
+      console.error("Erreur API paiements", err)
+      setError("Erreur lors du chargement")
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    setFilteredPayments(result)
-  }, [search, modeFilter])
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    setCurrentPage(1)
+    loadPayments()
+  }
 
-  if (isLoading || !isAuthenticated) return null
+  const handleModeChange = (mode: string) => {
+    setModeFilter(mode)
+    setCurrentPage(1)
+  }
 
-  const totalMontant = filteredPayments.reduce((sum, p) => sum + p.montant, 0)
+  if (!isAuthenticated) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-12">
+          <p className="text-muted-foreground">Redirection...</p>
+        </div>
+      </AdminLayout>
+    )
+  }
+
+  const filtered = modeFilter === "tous" ? payments : payments.filter((p) => p.mode.toLowerCase() === modeFilter)
+  const totalMontant = filtered.reduce((sum, p) => sum + p.montant, 0)
+  const momoCount = payments.filter((p) => p.mode.toLowerCase() === "momo").length
+  const orangeCount = payments.filter((p) => p.mode.toLowerCase() === "orange").length
+  const cashCount = payments.filter((p) => p.mode.toLowerCase() === "cash").length
+
+  const modeLabel = (mode: string) => {
+    switch (mode?.toLowerCase()) {
+      case "momo": return "Mobile Money"
+      case "orange": return "Orange Money"
+      case "cash": return "Espèces"
+      default: return mode
+    }
+  }
+
+  const modeBadgeClass = (mode: string) => {
+    switch (mode?.toLowerCase()) {
+      case "momo": return "bg-blue-100 text-blue-900"
+      case "orange": return "bg-orange-100 text-orange-900"
+      case "cash": return "bg-purple-100 text-purple-900"
+      default: return "bg-muted text-muted-foreground"
+    }
+  }
 
   return (
     <AdminLayout>
@@ -123,14 +150,13 @@ export default function PaymentsPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Paiements</h1>
-          <p className="text-muted-foreground">
-            Total: {filteredPayments.length} paiement(s) - {totalMontant.toLocaleString()} XAF
-          </p>
+          <p className="text-muted-foreground">Total: {pagination.total} paiement(s)</p>
         </div>
 
-        {/* Search and Filter Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search */}
+        {error && <div className="bg-red-100 border border-red-400 text-red-900 px-4 py-3 rounded">{error}</div>}
+
+        {/* Search + Filter */}
+        <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
@@ -141,113 +167,127 @@ export default function PaymentsPage() {
               className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-colors text-sm md:text-base"
             />
           </div>
-
-          {/* Mode Filter */}
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-            <select
-              value={modeFilter}
-              onChange={(e) => setModeFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-colors text-sm md:text-base appearance-none"
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+              <select
+                value={modeFilter}
+                onChange={(e) => handleModeChange(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-card border border-border rounded-md text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-colors text-sm md:text-base appearance-none"
+              >
+                <option value="tous">Tous les modes</option>
+                <option value="momo">Mobile Money (MoMo)</option>
+                <option value="orange">Orange Money</option>
+                <option value="cash">Espèces (Cash)</option>
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-primary hover:bg-accent text-primary-foreground rounded-md transition-colors text-sm font-medium whitespace-nowrap"
             >
-              <option value="tous">Tous les modes</option>
-              <option value="MoMo">Mobile Money (MoMo)</option>
-              <option value="Cash">Espèces (Cash)</option>
-            </select>
+              Rechercher
+            </button>
           </div>
-        </div>
+        </form>
 
+        {/* Stats cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-card border border-border rounded-lg p-6">
-            <p className="text-muted-foreground text-sm mb-2">Nombre de paiements</p>
-            <p className="text-3xl font-bold text-foreground">{filteredPayments.length}</p>
+            <p className="text-muted-foreground text-sm mb-2">Mobile Money</p>
+            <p className="text-3xl font-bold text-blue-700">{momoCount}</p>
           </div>
           <div className="bg-card border border-border rounded-lg p-6">
-            <p className="text-muted-foreground text-sm mb-2">Montant total</p>
-            <p className="text-3xl font-bold text-green-700">{totalMontant.toLocaleString()} XAF</p>
+            <p className="text-muted-foreground text-sm mb-2">Orange Money</p>
+            <p className="text-3xl font-bold text-orange-600">{orangeCount}</p>
           </div>
           <div className="bg-card border border-border rounded-lg p-6">
-            <p className="text-muted-foreground text-sm mb-2">Montant moyen</p>
-            <p className="text-3xl font-bold text-blue-700">
-              {filteredPayments.length > 0 ? Math.round(totalMontant / filteredPayments.length).toLocaleString() : 0}{" "}
-              XAF
-            </p>
+            <p className="text-muted-foreground text-sm mb-2">Espèces</p>
+            <p className="text-3xl font-bold text-purple-700">{cashCount}</p>
           </div>
         </div>
 
         {/* Table */}
         <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">
-                    Nom du payeur
-                  </th>
-                  <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">
-                    Téléphone
-                  </th>
-                  <th className="px-4 md:px-6 py-3 text-right text-sm font-semibold text-foreground whitespace-nowrap">
-                    Montant
-                  </th>
-                  <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">
-                    Mode
-                  </th>
-                  <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">
-                    Date
-                  </th>
-                  <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">
-                    Admin
-                  </th>
-                  <th className="px-4 md:px-6 py-3 text-center text-sm font-semibold text-foreground whitespace-nowrap">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPayments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-secondary/50 transition-colors">
-                    <td className="px-4 md:px-6 py-3 text-sm text-foreground whitespace-nowrap">{payment.nomPayeur}</td>
-                    <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground whitespace-nowrap">
-                      {payment.telephone}
-                    </td>
-                    <td className="px-4 md:px-6 py-3 text-sm text-right text-green-700 font-semibold whitespace-nowrap">
-                      {payment.montant.toLocaleString()} XAF
-                    </td>
-                    <td className="px-4 md:px-6 py-3 text-sm whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                          payment.mode === "MoMo" ? "bg-blue-100 text-blue-900" : "bg-purple-100 text-purple-900"
-                        }`}
-                      >
-                        {payment.mode}
-                      </span>
-                    </td>
-                    <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground whitespace-nowrap">
-                      {payment.date}
-                    </td>
-                    <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground whitespace-nowrap">
-                      {payment.admin}
-                    </td>
-                    <td className="px-4 md:px-6 py-3 text-center whitespace-nowrap">
-                      <button
-                        onClick={() => router.push(`/admin/reservation/${payment.reservationId}`)}
-                        className="inline-flex items-center gap-2 px-3 py-2 bg-primary hover:bg-accent text-primary-foreground rounded-md transition-colors text-sm font-medium"
-                      >
-                        <span className="hidden sm:inline">Voir</span>
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {isLoading ? (
+              <div className="p-8 text-center">
+                <p className="text-muted-foreground">Chargement...</p>
+              </div>
+            ) : (
+              <>
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">Nom du payeur</th>
+                      <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">Téléphone</th>
+                      <th className="px-4 md:px-6 py-3 text-right text-sm font-semibold text-foreground whitespace-nowrap">Montant</th>
+                      <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">Mode</th>
+                      <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">Date</th>
+                      <th className="px-4 md:px-6 py-3 text-left text-sm font-semibold text-foreground whitespace-nowrap">Admin</th>
+                      <th className="px-4 md:px-6 py-3 text-center text-sm font-semibold text-foreground whitespace-nowrap">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((payment) => (
+                      <tr key={payment.id} className="hover:bg-secondary/50 transition-colors border-t border-border">
+                        <td className="px-4 md:px-6 py-3 text-sm text-foreground whitespace-nowrap">{payment.nomPayeur}</td>
+                        <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground whitespace-nowrap">{payment.telephone}</td>
+                        <td className="px-4 md:px-6 py-3 text-sm text-right text-green-700 font-semibold whitespace-nowrap">
+                          {payment.montant.toLocaleString()} XAF
+                        </td>
+                        <td className="px-4 md:px-6 py-3 text-sm whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 rounded text-xs font-medium ${modeBadgeClass(payment.mode)}`}>
+                            {modeLabel(payment.mode)}
+                          </span>
+                        </td>
+                        <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground whitespace-nowrap">{payment.date}</td>
+                        <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground whitespace-nowrap">{payment.admin}</td>
+                        <td className="px-4 md:px-6 py-3 text-center whitespace-nowrap">
+                          <button
+                            onClick={() => router.push(`/admin/reservation/${payment.reservationId}`)}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-primary hover:bg-accent text-primary-foreground rounded-md transition-colors text-xs font-medium"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                            <span className="hidden sm:inline">Voir</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {filtered.length === 0 && (
+                  <div className="p-8 text-center">
+                    <p className="text-muted-foreground">Aucun paiement trouvé</p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
-          {/* Empty State */}
-          {filteredPayments.length === 0 && (
-            <div className="p-8 text-center">
-              <p className="text-muted-foreground">Aucun paiement trouvé</p>
+          {!isLoading && pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 md:px-6 py-4 border-t border-border bg-secondary/20">
+              <p className="text-sm text-muted-foreground">
+                Page {pagination.page} sur {pagination.totalPages} ({pagination.total} paiements)
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { if (currentPage > 1) setCurrentPage(currentPage - 1) }}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center gap-1 px-3 py-2 bg-card border border-border rounded-md text-sm font-medium text-foreground hover:bg-secondary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Précédent
+                </button>
+                <button
+                  onClick={() => { if (currentPage < pagination.totalPages) setCurrentPage(currentPage + 1) }}
+                  disabled={currentPage === pagination.totalPages}
+                  className="inline-flex items-center gap-1 px-3 py-2 bg-card border border-border rounded-md text-sm font-medium text-foreground hover:bg-secondary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Suivant
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
         </div>

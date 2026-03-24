@@ -13,31 +13,34 @@ export default function Header() {
   const { darkMode, toggleDarkMode, language, setLanguage } = useTheme()
 
   const navLinks = [
-    { key: "common.home", href: "/" },
-    { key: "common.films", href: "/films" },
+    { key: "common.home",        href: "/" },
+    { key: "common.films",       href: "/films" },
     { key: "common.reservation", href: "/reservation" },
-    { key: "common.archives", href: "/archives" },
-    { key: "common.about", href: "/a-propos" },
-    { key: "common.contact", href: "/contact" },
+    { key: "common.archives",    href: "/archives" },
+    { key: "common.about",       href: "/a-propos" },
+    { key: "common.contact",     href: "/contact" },
   ]
 
   return (
-    <header className="fixed top-0 w-full z-[1000] bg-black/95 backdrop-blur-sm border-b border-white/10 h-20">
+    <header className="header-root fixed top-0 w-full z-[1000] backdrop-blur-md border-b h-20">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="flex-shrink-0">
-          <div className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden">
+        <Link href="/" className="flex-shrink-0 hover:opacity-90 transition-opacity">
+          <div className="flex items-center gap-2.5">
+            <div className="header-logo-ring w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden">
               <img src="/apple-icon.png" alt="Logo" className="w-full h-full object-cover" />
             </div>
-            <span className="hidden sm:block text-white font-bold text-xs md:text-sm">
-              Movie in the Park
-            </span>
+            <div className="hidden sm:flex flex-col">
+              <span className="text-white font-bold text-xs md:text-sm leading-tight">
+                Movie in the Park
+              </span>
+              <span className="header-subtitle">✝ Édition Pâques 2026</span>
+            </div>
           </div>
         </Link>
 
-        {/* Desktop Navigation */}
+        {/* Navigation Desktop */}
         <nav className="hidden lg:flex items-center gap-6">
           {navLinks.map((link) => {
             const active = pathname === link.href
@@ -45,68 +48,62 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm transition-colors ${
-                  active ? "text-[#FACC15] font-bold" : "text-[#F8F8F8] hover:text-[#FACC15]"
-                }`}
+                className={`header-nav-link group${active ? " active" : ""}`}
               >
                 {t(link.key, language)}
+                {active
+                  ? <span className="header-nav-underline-active" />
+                  : <span className="header-nav-underline-hover" />
+                }
               </Link>
             )
           })}
         </nav>
 
-        {/* Desktop Controls */}
-        <div className="hidden md:flex items-center gap-4">
-
-          {/* Dark mode */}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 hover:bg-white/10 rounded-lg transition text-white hover:text-[#FACC15]"
-          >
+        {/* Contrôles Desktop */}
+        <div className="hidden lg:flex items-center gap-3">
+          <button type="button" onClick={toggleDarkMode} className="header-icon-btn">
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
-          {/* Lang switch */}
-          <div className="flex items-center gap-2 bg-white/10 rounded-lg p-1">
+          <div className="header-lang-wrapper">
             <button
+              type="button"
               onClick={() => setLanguage("fr")}
-              className={`px-3 py-1 rounded text-xs font-medium ${
-                language === "fr" ? "bg-[#854D0E] text-white" : "text-[#CCCCCC] hover:text-white"
-              }`}
+              className={`header-lang-btn${language === "fr" ? " active" : ""}`}
             >
               FR
             </button>
             <button
+              type="button"
               onClick={() => setLanguage("en")}
-              className={`px-3 py-1 rounded text-xs font-medium ${
-                language === "en" ? "bg-[#854D0E] text-white" : "text-[#CCCCCC] hover:text-white"
-              }`}
+              className={`header-lang-btn${language === "en" ? " active" : ""}`}
             >
               EN
             </button>
           </div>
 
-          {/* CTA */}
           <Link href="/reservation">
-            <button className="bg-[#CA8A04] hover:bg-[#FACC15] text-white px-6 py-2 rounded-lg font-medium transition hover:scale-105 hover:shadow-lg hover:shadow-yellow-900/50 text-sm">
+            <button type="button" className="header-cta-btn">
               {t("common.reservation", language)}
             </button>
           </Link>
         </div>
 
-        {/* Mobile Menu Toggle */}
+        {/* Bouton menu mobile */}
         <button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-white hover:text-[#FACC15] transition"
+          className="lg:hidden header-icon-btn"
         >
           {isOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Menu Mobile */}
       {isOpen && (
-        <div className="md:hidden bg-black/98 border-b border-white/10">
-          <nav className="flex flex-col gap-3 p-4">
+        <div className="mobile-menu-root lg:hidden">
+          <nav className="flex flex-col gap-2 p-4">
             {navLinks.map((link) => {
               const active = pathname === link.href
               return (
@@ -114,55 +111,39 @@ export default function Header() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`py-2 text-sm ${
-                    active ? "text-[#FACC15] font-bold" : "text-white hover:text-[#FACC15]"
-                  }`}
+                  className={`mobile-nav-link${active ? " active" : ""}`}
                 >
                   {t(link.key, language)}
                 </Link>
               )
             })}
 
-            {/* Mobile theme + language */}
-            <div className="border-t border-white/10 pt-3 mt-3 space-y-3">
-              <button
-                onClick={toggleDarkMode}
-                className="flex items-center justify-between p-3 bg-white/10 rounded-lg text-white text-sm"
-              >
-                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+            <div className="mobile-controls-divider space-y-2">
+              <button type="button" onClick={toggleDarkMode} className="mobile-theme-btn">
                 <span>{darkMode ? "Mode clair" : "Mode sombre"}</span>
+                {darkMode ? <Sun size={16} /> : <Moon size={16} />}
               </button>
 
-              <div className="flex items-center gap-2 bg-white/10 rounded-lg p-1">
+              <div className="mobile-lang-wrapper">
                 <button
-                  onClick={() => {
-                    setLanguage("fr")
-                    setIsOpen(false)
-                  }}
-                  className={`flex-1 px-3 py-2 rounded text-xs font-medium ${
-                    language === "fr" ? "bg-[#854D0E] text-white" : "text-[#CCCCCC] hover:text-white"
-                  }`}
+                  type="button"
+                  onClick={() => { setLanguage("fr"); setIsOpen(false) }}
+                  className={`flex-1 py-2 rounded text-xs font-medium transition-all header-lang-btn${language === "fr" ? " active" : ""}`}
                 >
                   Français
                 </button>
-
                 <button
-                  onClick={() => {
-                    setLanguage("en")
-                    setIsOpen(false)
-                  }}
-                  className={`flex-1 px-3 py-2 rounded text-xs font-medium ${
-                    language === "en" ? "bg-[#854D0E] text-white" : "text-[#CCCCCC] hover:text-white"
-                  }`}
+                  type="button"
+                  onClick={() => { setLanguage("en"); setIsOpen(false) }}
+                  className={`flex-1 py-2 rounded text-xs font-medium transition-all header-lang-btn${language === "en" ? " active" : ""}`}
                 >
                   English
                 </button>
               </div>
 
-              {/* CTA mobile */}
               <Link href="/reservation" onClick={() => setIsOpen(false)}>
-                <button className="w-full bg-[#CA8A04] hover:bg-[#FACC15] text-white py-2 rounded-lg font-medium mt-2 text-sm">
-                  Réserver
+                <button type="button" className="mobile-cta-btn">
+                  {t("common.reservation", language)}
                 </button>
               </Link>
             </div>

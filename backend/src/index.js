@@ -4,13 +4,14 @@ const { sequelize } = require("./models")
 const logger = require("./config/logger")
 const app = require("./app")
 
+// Server initialization with dynamic roles support
 const PORT = process.env.PORT || 4000
 
 sequelize
   .authenticate()
   .then(() => {
     logger.info("Database connection established")
-    return sequelize.sync({ alter: false })
+    return sequelize.sync({ alter: true })
   })
   .then(() => {
     app.listen(PORT, () => {

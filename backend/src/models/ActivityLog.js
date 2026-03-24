@@ -20,7 +20,7 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       entity_type: {
-        type: DataTypes.ENUM("reservation", "pack", "payment", "ticket", "scan", "participant", "user"),
+        type: DataTypes.STRING,
         allowNull: false,
       },
       entity_id: {
