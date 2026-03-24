@@ -52,5 +52,5 @@ tmp/
 temp/
 
 # Deployment & Render
-render.yaml
-# backend/.env.render est un modèle, mais soyez prudent si vous y mettez des vraies clés
+# render.yaml est nécessaire pour le déploiement automatique
+!render.yaml
