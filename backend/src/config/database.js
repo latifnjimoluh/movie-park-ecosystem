@@ -3,7 +3,8 @@ const path = require("path")
 
 const useSSL = process.env.DB_SSL === "true"
 
-const dbConfig = {
+// Configuration de base
+let dbConfig = {
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
@@ -20,6 +21,11 @@ const dbConfig = {
   } : {}
 }
 
+// Support de l'URL de connexion complète (standard sur Render/Heroku)
+if (process.env.DATABASE_URL) {
+  dbConfig.url = process.env.DATABASE_URL
+}
+
 module.exports = {
   development: {
     ...dbConfig,
@@ -27,7 +33,6 @@ module.exports = {
     password: process.env.DB_PASSWORD || "Nexus2023.",
     database: process.env.DB_NAME || "movie",
     host: process.env.DB_HOST || "localhost",
-    logging: false,
   },
   test: {
     username: "postgres",
