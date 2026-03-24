@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Fragment } from "react"
+import React, { useState, useEffect, Fragment } from "react"
 import { api } from "@/lib/api"
 import { Check, X, Save, Shield, Info, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
