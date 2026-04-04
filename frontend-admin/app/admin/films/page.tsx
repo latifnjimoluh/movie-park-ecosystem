@@ -70,17 +70,16 @@ export default function FilmsPage() {
   }
 
   const getImageUrl = (film: Film) => {
-    // Priorité au nouveau champ image_url (upload local)
     const url = film.image_url || film.poster_url
     if (!url) return null
-    
+
     let finalUrl = url
     if (!url.startsWith("http")) {
-      const backendBase = api.baseURL.replace("/api", "")
+      // Utiliser /api$ (ancre fin) pour ne pas supprimer le sous-domaine "api."
+      const backendBase = api.baseURL.replace(/\/api$/, "")
       finalUrl = `${backendBase}${url}`
     }
 
-    // Ajouter un timestamp pour éviter le cache du navigateur lors d'une mise à jour
     return `${finalUrl}?t=${new Date(film.updatedAt || Date.now()).getTime()}`
   }
 

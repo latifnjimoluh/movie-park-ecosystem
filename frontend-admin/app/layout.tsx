@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Movie in the Park Admin",
   description: "Admin dashboard for Movie in the Park",
   generator: "v0.app",
+  other: { charset: "utf-8" },
   icons: {
     icon: [
       {
@@ -34,7 +35,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      {/* <CHANGE> Added suppressHydrationWarning for theme provider */}
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
       <body className={`font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}

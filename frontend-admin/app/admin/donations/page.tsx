@@ -447,7 +447,7 @@ export default function DonationsPage() {
                         const StatusIcon = cfg.icon
                         const isPending = d.payment_status === "pending"
                         const proofFullUrl = d.proof_url
-                          ? `${api.baseURL.replace("/api", "")}${d.proof_url}`
+                          ? `${api.baseURL.replace(/\/api$/, "")}${d.proof_url}`
                           : null
                         return (
                           <tr key={d.id} className="bg-card hover:bg-muted/30 transition-colors">

@@ -68,10 +68,9 @@ export default function TestimonialsPage() {
     const url = t.image_url || t.photo_url
     if (!url) return null
     if (url.startsWith("http")) return url
-    const backendBase = api.baseURL.replace("/api", "")
-    let finalUrl = `${backendBase}${url}`
-    
-    // Cache buster
+    // Utiliser /api$ (ancre fin) pour ne pas supprimer le sous-domaine "api."
+    const backendBase = api.baseURL.replace(/\/api$/, "")
+    const finalUrl = `${backendBase}${url}`
     const timestamp = t.updatedAt ? new Date(t.updatedAt).getTime() : Date.now()
     return `${finalUrl}?t=${timestamp}`
   }

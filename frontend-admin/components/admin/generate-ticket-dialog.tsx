@@ -87,7 +87,7 @@ export function GenerateTicketDialog({
       setTicketData(ticket)
 
       if (ticket.pdf_url) {
-        const backendBase = BASE_URL.replace("/api", "")
+        const backendBase = BASE_URL.replace(/\/api$/, "")
         setPdfUrl(
           ticket.pdf_url.startsWith("http")
             ? ticket.pdf_url
