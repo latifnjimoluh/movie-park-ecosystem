@@ -49,15 +49,16 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrc: ["'self'"],
         imgSrc: ["'self'", "data:", "blob:"],
-        connectSrc: ["'self'"],
+        connectSrc: ["'self'", "https://api.movie-in-the-park.com"],
         fontSrc: ["'self'"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
         frameSrc: ["'self'"],
         frameAncestors: [
           "'self'",
-          "http://localhost:3002",
-          "http://localhost:3001"
+          "https://movie-in-the-park.com",
+          "https://app.movie-in-the-park.com",
+          "https://dashboard-admin.movie-in-the-park.com"
         ],
       },
     },
@@ -69,15 +70,29 @@ app.use(
 // ============================================
 // CORS - Autorisations complètes
 // ============================================
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "https://movie-in-the-park.com",
+  "https://app.movie-in-the-park.com",
+  "https://dashboard-admin.movie-in-the-park.com",
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL2,
+].filter(Boolean)
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:3002",
-      process.env.FRONTEND_URL,
-      process.env.FRONTEND_URL2,
-    ].filter(Boolean),
+    origin: function (origin, callback) {
+      // Autorise les requêtes sans origine (comme mobile apps ou curl)
+      if (!origin) return callback(null, true)
+      
+      if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith(".movie-in-the-park.com")) {
+        callback(null, true)
+      } else {
+        callback(new Error("Not allowed by CORS"))
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
