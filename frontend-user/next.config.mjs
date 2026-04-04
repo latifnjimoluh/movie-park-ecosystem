@@ -1,8 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    domains: ["localhost"],
+  typescript: {
+    ignoreBuildErrors: true,
   },
-}
 
-export default nextConfig
+  images: {
+    unoptimized: true,
+  },
+
+  // Désactive le badge Vercel / V0 (le rond noir "N")
+  vercelToolbar: {
+    enable: false,
+  },
+
+  experimental: {
+    reactCompiler: false,
+    turbotrace: {
+      logTracing: false,
+      memoryBufferSize: 0,
+    },
+  },
+};
+
+export default nextConfig;

@@ -1,30 +1,35 @@
-# Movie in the Park
+# Movie In The Park Admin - Frontend
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+Interface d'administration moderne pour la gestion de l'événement "Movie In The Park".
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/njimoluhs-projects/v0-movie-in-the-park)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/rIcPzZmTbyt)
+## Stack Technique
+- **Framework :** Next.js 15+ (App Router)
+- **UI Components :** Radix UI, Tailwind CSS
+- **État & Validation :** React Hook Form, Zod
+- **Visualisation :** Recharts
+- **Analyse :** Vercel Analytics
 
-## Overview
+## Installation
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+```bash
+npm install
+```
 
-## Deployment
+## Lancement
 
-Your project is live at:
+Pour le développement :
+```bash
+npm run dev
+```
 
-**[https://vercel.com/njimoluhs-projects/v0-movie-in-the-park](https://vercel.com/njimoluhs-projects/v0-movie-in-the-park)**
+Pour la production :
+```bash
+npm run build
+npm run start
+```
 
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/rIcPzZmTbyt](https://v0.app/chat/rIcPzZmTbyt)**
-
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+## Fonctionnalités
+- Dashboard de statistiques en temps réel.
+- Gestion des réservations et des paiements.
+- Validation des tickets via QR code.
+- Configuration des packs et tarifs.

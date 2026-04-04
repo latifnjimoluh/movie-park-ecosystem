@@ -7,47 +7,45 @@ const { Readable } = require("stream")
 const fs = require("fs")
 
 // Configuration du provider d'email
-const EMAIL_PROVIDER = process.env.EMAIL_PROVIDER || "gmail" // 'gmail' ou 'sendgrid'
+// Valeurs possibles : "smtp" (LWS / hébergement propre) | "sendgrid"
+// "gmail" est conservé pour compatibilité ascendante — il utilise le même chemin SMTP
+const EMAIL_PROVIDER = process.env.EMAIL_PROVIDER || "smtp"
 
-// Configuration de nodemailer pour Gmail
-let transporter = null
-if (EMAIL_PROVIDER === "gmail") {
-  transporter = nodemailer.createTransport({
+// ─── Helper : construit un transporter nodemailer depuis les variables SMTP ───
+function buildSmtpTransporter() {
+  const port    = parseInt(process.env.SMTP_PORT || "465", 10)
+  const secure  = process.env.SMTP_SECURE === "true" || port === 465
+
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: process.env.SMTP_SECURE === "true",
+    port,
+    secure,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
     tls: {
-      rejectUnauthorized: false,
-    },
-    pool: true, // ✅ Utiliser le pooling de connexions
-    maxConnections: 5, // ✅ Max 5 connexions simultanées
-    maxMessages: 100, // ✅ Max 100 messages par connexion
-  })
-  logger.info("Email provider: Gmail SMTP with connection pooling")
-} else if (EMAIL_PROVIDER === "sendgrid") {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-  logger.info("Email provider: SendGrid API")
-} else {
-  logger.error(`Unknown EMAIL_PROVIDER: ${EMAIL_PROVIDER}. Using Gmail as fallback.`)
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: process.env.SMTP_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-    tls: {
+      // Accepte les certificats auto-signés sur les hébergements mutualisés LWS
       rejectUnauthorized: false,
     },
     pool: true,
     maxConnections: 5,
     maxMessages: 100,
   })
+}
+
+// ─── Initialisation du transporter ───────────────────────────────────────────
+let transporter = null
+
+if (EMAIL_PROVIDER === "sendgrid") {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+  logger.info("Email provider: SendGrid API")
+} else {
+  // "smtp" | "gmail" (compat) | toute autre valeur → nodemailer SMTP
+  transporter = buildSmtpTransporter()
+  logger.info(
+    `Email provider: SMTP (${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 465}) — user: ${process.env.SMTP_USER}`
+  )
 }
 
 /**
@@ -77,9 +75,9 @@ const sendEmail = async (mailOptions) => {
       await sgMail.send(sgMailOptions)
       logger.info(`Email sent via SendGrid to ${mailOptions.to}`)
     } else {
-      // Gmail SMTP
+      // SMTP (LWS / hébergement propre)
       await transporter.sendMail(mailOptions)
-      logger.info(`Email sent via Gmail to ${mailOptions.to}`)
+      logger.info(`Email sent via SMTP to ${mailOptions.to}`)
     }
   } catch (error) {
     logger.error(`Error sending email to ${mailOptions.to}: ${error.message}`)

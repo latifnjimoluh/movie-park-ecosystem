@@ -1,13 +1,16 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { ThemeProvider } from "@/components/theme-provider"
 import { Analytics } from "@vercel/analytics/next"
+import { AppThemeProvider } from "@/lib/theme-context"
+import { ScrollToTopButton } from "@/components/scroll-to-top-button"
+import { TrackingWrapper } from "@/components/tracking-wrapper"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Movie in the Park Admin",
-  description: "Admin dashboard for Movie in the Park",
-  generator: "v0.app",
+  title: "Movie in the Park - Cinéma en Plein Air",
+  description:
+    "Vivez le cinéma autrement sous les étoiles. Découvrez notre événement premium de cinéma en plein air à Yaoundé.",
+  generator: "Movie",
   icons: {
     icon: [
       {
@@ -19,7 +22,7 @@ export const metadata: Metadata = {
         media: "(prefers-color-scheme: dark)",
       },
       {
-        url: "/icon.svg",
+        url: "/apple-icon.png",
         type: "image/svg+xml",
       },
     ],
@@ -29,17 +32,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      {/* <CHANGE> Added suppressHydrationWarning for theme provider */}
-      <body className={`font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {children}
-        </ThemeProvider>
-        <Analytics />
+      <body className="font-sans antialiased bg-[#0E0520] text-[#F9F5FF]">
+        <AppThemeProvider>
+          <TrackingWrapper>
+            {children}
+            <ScrollToTopButton />
+            <Analytics />
+          </TrackingWrapper>
+        </AppThemeProvider>
       </body>
     </html>
   )
