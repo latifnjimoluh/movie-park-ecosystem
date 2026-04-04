@@ -13,20 +13,18 @@ export default function Header() {
   const { darkMode, toggleDarkMode, language, setLanguage } = useTheme()
 
   const navLinks = [
-    { key: "common.home",        href: "/" },
-    { key: "common.films",       href: "/films" },
+    { key: "common.home", href: "/" },
+    { key: "common.films", href: "/films" },
     { key: "common.reservation", href: "/reservation" },
-    { key: "common.archives",    href: "/archives" },
-    { key: "common.about",       href: "/a-propos" },
-    { key: "common.contact",     href: "/contact" },
-    { key: "common.don",         href: "/don", highlight: true },
+    { key: "common.archives", href: "/archives" },
+    { key: "common.about", href: "/a-propos" },
+    { key: "common.contact", href: "/contact" },
+    { key: "common.don", href: "/don", highlight: true },
   ]
 
   return (
     <header className="header-root fixed top-0 w-full z-[1000] backdrop-blur-md border-b h-20">
       <div className="header-shell max-w-[1440px] mx-auto px-4 md:px-6 h-full">
-
-        {/* Logo */}
         <Link href="/" className="header-brand hover:opacity-90 transition-opacity">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="header-logo-ring w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden">
@@ -41,7 +39,6 @@ export default function Header() {
           </div>
         </Link>
 
-        {/* Navigation Desktop */}
         <nav className="header-desktop-nav hidden lg:flex items-center justify-center">
           {navLinks.map((link) => {
             const active = pathname === link.href
@@ -54,6 +51,7 @@ export default function Header() {
                 </Link>
               )
             }
+
             return (
               <Link
                 key={link.href}
@@ -70,7 +68,6 @@ export default function Header() {
           })}
         </nav>
 
-        {/* Contrôles Desktop */}
         <div className="header-desktop-controls hidden lg:flex items-center gap-3">
           <button type="button" onClick={toggleDarkMode} className="header-icon-btn">
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
@@ -100,7 +97,6 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Bouton menu mobile */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
@@ -110,7 +106,6 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Menu Mobile */}
       {isOpen && (
         <div className="mobile-menu-root lg:hidden">
           <nav className="flex flex-col gap-2 p-4">
@@ -128,6 +123,7 @@ export default function Header() {
                   </Link>
                 )
               }
+
               return (
                 <Link
                   key={link.href}

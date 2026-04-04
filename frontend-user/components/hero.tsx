@@ -17,13 +17,12 @@ type Particle = {
   opacity: number
 }
 
-/* Symboles Édition Spéciale Orphelins */
 const DEFAULT_SYMBOLS = ["🤍", "🕊️", "🌸", "⭐", "✨", "🌿", "🌺", "💫", "🙏", "🌱"]
 
 export default function Hero() {
   const [particles, setParticles] = useState<Particle[]>([])
-  const [config, setConfig]       = useState<EventConfigMap>(FALLBACK_EVENT_CONFIG)
-  const { language }              = useTheme()
+  const [config, setConfig] = useState<EventConfigMap>(FALLBACK_EVENT_CONFIG)
+  const { language } = useTheme()
 
   useEffect(() => {
     fetchEventConfig().then(({ config: cfg }) => {
@@ -33,16 +32,18 @@ export default function Hero() {
       try {
         const parsed = JSON.parse(cfg.particle_symbols || "[]")
         if (Array.isArray(parsed) && parsed.length > 0) symbols = parsed
-      } catch { /* garde les defaults */ }
+      } catch {
+        // Garde les valeurs par défaut si la configuration est invalide.
+      }
 
       const generated: Particle[] = Array.from({ length: 38 }).map(() => ({
-        symbol:   symbols[Math.floor(Math.random() * symbols.length)],
-        left:     Math.random() * 100 + "%",
-        top:      Math.random() * 100 + "%",
-        size:     Math.random() * 14 + 10,
+        symbol: symbols[Math.floor(Math.random() * symbols.length)],
+        left: Math.random() * 100 + "%",
+        top: Math.random() * 100 + "%",
+        size: Math.random() * 14 + 10,
         duration: Math.random() * 10 + 7,
-        delay:    Math.random() * 6,
-        opacity:  Math.random() * 0.30 + 0.10,
+        delay: Math.random() * 6,
+        opacity: Math.random() * 0.3 + 0.1,
       }))
       setParticles(generated)
     })
@@ -52,25 +53,22 @@ export default function Hero() {
 
   return (
     <section className="hero-root relative w-full overflow-hidden pt-24 pb-16 md:pt-32 md:pb-20 flex flex-col justify-center">
-
-      {/* Arrière-plans décoratifs */}
       <div className="hero-gradient-bg absolute inset-0 pointer-events-none" />
-      <div className="hero-dot-grid    absolute inset-0 pointer-events-none" />
+      <div className="hero-dot-grid absolute inset-0 pointer-events-none" />
       <div className="hero-center-halo absolute inset-0 pointer-events-none" />
 
-      {/* Particules de Pâques — valeurs entièrement dynamiques, inline obligatoire */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {particles.map((p, i) => (
           <span
             key={i}
             className="absolute select-none animate-particle-float"
             style={{
-              left:              p.left,
-              top:               p.top,
-              fontSize:          `${p.size}px`,
-              opacity:           p.opacity,
+              left: p.left,
+              top: p.top,
+              fontSize: `${p.size}px`,
+              opacity: p.opacity,
               animationDuration: `${p.duration}s`,
-              animationDelay:    `${p.delay}s`,
+              animationDelay: `${p.delay}s`,
             }}
           >
             {p.symbol}
@@ -78,17 +76,13 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Contenu principal */}
       <div className="relative flex flex-col items-center justify-center px-4 md:px-6 py-8 md:py-12 z-10">
-
-        {/* Badge édition */}
         <div className="mb-5 animate-fade-in-up anim-delay-50">
           <span className="hero-edition-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase">
             ✝ {config.edition_label}
           </span>
         </div>
 
-        {/* Logo avec auréole */}
         <div className="mb-7 md:mb-9 animate-scale-in anim-delay-120">
           <div className="hero-logo-ring w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden">
             <img
@@ -99,24 +93,19 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Titre – dégradé aurore pascale */}
         <h1 className="text-gradient-easter text-4xl md:text-7xl font-black text-center uppercase tracking-widest mb-3 md:mb-4 animate-fade-in-up anim-delay-300">
           {t("hero.title", language)}
         </h1>
 
-        {/* Tagline */}
         <p className="hero-tagline text-lg md:text-2xl text-center font-light mb-3 animate-fade-in-up anim-delay-500">
           {config.tagline}
         </p>
 
-        {/* Sous-titre */}
         <p className="hero-subtitle text-sm md:text-base text-center mb-10 md:mb-14 italic animate-fade-in-up anim-delay-600">
           {config.subtitle}
         </p>
 
-        {/* Carte info */}
         <div className="glass-purple hero-info-card relative rounded-2xl px-6 md:px-12 py-5 md:py-7 mb-9 md:mb-11 flex flex-col md:flex-row items-center gap-6 md:gap-10 w-full max-w-3xl animate-fade-in-up anim-delay-800">
-
           <div className="flex items-center gap-3 text-center md:text-left">
             <Calendar size={19} className="flex-shrink-0 hero-icon-color" />
             <div>
@@ -163,7 +152,6 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Boutons CTA */}
         <div className="flex flex-col md:flex-row gap-4 md:gap-5 mb-9 w-full max-w-xs md:max-w-none md:justify-center animate-fade-in-up anim-delay-1000">
           <Link href="/films" className="flex-1 md:flex-none">
             <button type="button" className="hero-btn-outline w-full px-8 md:px-12 py-3.5 md:py-4 rounded-xl font-medium text-sm md:text-base">
@@ -184,7 +172,6 @@ export default function Hero() {
           </Link>
         </div>
 
-        {/* Preuve sociale */}
         <p className="hero-social-proof text-center text-sm animate-fade-in-up anim-delay-1100">
           {config.social_proof}
         </p>

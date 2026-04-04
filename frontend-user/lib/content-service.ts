@@ -110,6 +110,33 @@ export interface EventConfigMap {
   [key: string]: string
 }
 
+function repairMojibakeText(value: string): string {
+  if (!value) return value
+
+  const suspiciousSequences = ["Ã", "Â", "â", "ðŸ", "ï¸", "Å", "�"]
+  if (!suspiciousSequences.some((token) => value.includes(token))) return value
+
+  try {
+    if (typeof TextDecoder === "undefined") return value
+    const bytes = Uint8Array.from(value, (char) => char.charCodeAt(0))
+    const decoded = new TextDecoder("utf-8", { fatal: false }).decode(bytes)
+    return decoded.includes("�") ? value : decoded
+  } catch {
+    return value
+  }
+}
+
+function repairMojibakeDeep<T>(input: T): T {
+  if (typeof input === "string") return repairMojibakeText(input) as T
+  if (Array.isArray(input)) return input.map((item) => repairMojibakeDeep(item)) as T
+  if (input && typeof input === "object") {
+    return Object.fromEntries(
+      Object.entries(input).map(([key, value]) => [key, repairMojibakeDeep(value)])
+    ) as T
+  }
+  return input
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Données de secours (utilisées uniquement si le backend est injoignable)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -318,7 +345,7 @@ export async function fetchFilms(): Promise<{ films: DbFilm[]; fromFallback: boo
     `${API_URL}/films?is_active=true`,
     FALLBACK_FILMS,
   )
-  return { films: data, fromFallback }
+  return { films: repairMojibakeDeep(data), fromFallback }
 }
 
 export async function fetchSchedule(): Promise<{ items: DbScheduleItem[]; fromFallback: boolean }> {
@@ -326,7 +353,7 @@ export async function fetchSchedule(): Promise<{ items: DbScheduleItem[]; fromFa
     `${API_URL}/schedule?is_active=true`,
     FALLBACK_SCHEDULE,
   )
-  return { items: data, fromFallback }
+  return { items: repairMojibakeDeep(data), fromFallback }
 }
 
 export async function fetchTestimonials(): Promise<{ testimonials: DbTestimonial[]; fromFallback: boolean }> {
@@ -334,7 +361,7 @@ export async function fetchTestimonials(): Promise<{ testimonials: DbTestimonial
     `${API_URL}/testimonials?is_active=true`,
     FALLBACK_TESTIMONIALS,
   )
-  return { testimonials: data, fromFallback }
+  return { testimonials: repairMojibakeDeep(data), fromFallback }
 }
 
 export async function fetchEventConfig(): Promise<{ config: EventConfigMap; fromFallback: boolean }> {
@@ -342,7 +369,7 @@ export async function fetchEventConfig(): Promise<{ config: EventConfigMap; from
     `${API_URL}/event-config/public`,
     FALLBACK_EVENT_CONFIG,
   )
-  return { config: data as EventConfigMap, fromFallback }
+  return { config: repairMojibakeDeep(data as EventConfigMap), fromFallback }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
