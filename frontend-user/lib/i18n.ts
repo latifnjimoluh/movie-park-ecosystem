@@ -566,8 +566,8 @@ export const translations = {
         step1: "Renseignez le formulaire ci-contre",
         step2: "Envoyez le montant par Mobile Money au :",
         operator: "MTN MoMo / Orange Money",
-        number: "+237 697 30 44 50",
-        step3: "Envoyez votre reçu de paiement sur WhatsApp au même numéro",
+        number: "+237 6 97 30 44 50 / +237 6 90 80 16 89",
+        step3: "Envoyez votre reçu de paiement sur WhatsApp à l'un de ces numéros",
         step3Sub: "Indiquez « DON ORPHELINS » comme objet",
       },
 
@@ -1580,8 +1580,8 @@ export const translations = {
         step1: "Fill in the form opposite",
         step2: "Send the amount via Mobile Money to:",
         operator: "MTN MoMo / Orange Money",
-        number: "+237 697 30 44 50",
-        step3: "Send your payment receipt on WhatsApp to the same number",
+        number: "+237 6 97 30 44 50 / +237 6 90 80 16 89",
+        step3: "Send your payment receipt on WhatsApp to one of these numbers",
         step3Sub: "Please indicate \"ORPHAN DONATION\" as the subject",
       },
 
