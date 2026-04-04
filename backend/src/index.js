@@ -5,7 +5,7 @@ const logger = require("./config/logger")
 const app = require("./app")
 
 // Server initialization with dynamic roles support
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 5000
 
 sequelize
   .authenticate()
