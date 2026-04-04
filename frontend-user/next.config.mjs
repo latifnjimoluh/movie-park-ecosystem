@@ -8,6 +8,12 @@ const nextConfig = {
     unoptimized: true,
   },
 
+  // Empêche Next.js de remonter à un package-lock.json parent sur le VPS
+  // (évite l'erreur "inferred workspace root" sur un monorepo détecté à tort)
+  turbopack: {
+    root: process.cwd(),
+  },
+
   async headers() {
     return [
       {

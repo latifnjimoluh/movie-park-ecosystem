@@ -34,8 +34,9 @@ server {
     server_name movie-in-the-park.com app.movie-in-the-park.com;
 
     # Force UTF-8 sur les réponses HTML (résout l'affichage corrompu des accents)
+    # text/html est déjà inclus par défaut — ne pas le répéter pour éviter le warning
     charset utf-8;
-    charset_types text/html text/plain text/css application/javascript application/json;
+    charset_types text/plain text/css application/javascript application/json;
 
     # Nécessaire pour les uploads de preuves de paiement / affiches
     client_max_body_size 20M;
@@ -69,7 +70,7 @@ server {
     server_name dashboard-admin.movie-in-the-park.com;
 
     charset utf-8;
-    charset_types text/html text/plain text/css application/javascript application/json;
+    charset_types text/plain text/css application/javascript application/json;
 
     client_max_body_size 20M;
 
@@ -155,9 +156,17 @@ pm2 flush
 # ─── Backend (Port 5000) ──────────────────────────────────────────────────────
 echo "⚙️  Installation et lancement du backend..."
 cd "$PROJECT_ROOT/backend"
+
+# sequelize-cli est en devDependencies → installer globalement pour que
+# "npm run migrate" fonctionne même avec --omit=dev
+if ! command -v sequelize &> /dev/null; then
+    echo "📦 Installation globale de sequelize-cli..."
+    npm install -g sequelize-cli
+fi
+
 npm install --omit=dev
 
-echo "🗃️  Exécution des migrations Sequelize..."
+echo "🗃️  Migrations Sequelize (nouvelles seulement, idempotent)..."
 npm run migrate
 
 echo "🚀 Démarrage du backend PM2..."
@@ -169,7 +178,8 @@ PORT=5000 NODE_ENV=production pm2 start src/index.js \
 # ─── Frontend public – frontend-user (Port 3000) ─────────────────────────────
 echo "🌐 Build du site public (frontend-user)..."
 cd "$PROJECT_ROOT/frontend-user"
-npm install --omit=dev
+# Les devDependencies (tailwindcss, postcss, typescript…) sont nécessaires au build
+npm install
 npm run build
 
 echo "🚀 Démarrage du site public PM2..."
@@ -182,7 +192,7 @@ PORT=3000 pm2 start npm \
 # ─── Frontend admin – frontend-admin (Port 3001) ─────────────────────────────
 echo "🔐 Build du site admin (frontend-admin)..."
 cd "$PROJECT_ROOT/frontend-admin"
-npm install --omit=dev
+npm install
 npm run build
 
 echo "🚀 Démarrage du site admin PM2..."
