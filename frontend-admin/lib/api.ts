@@ -1,6 +1,6 @@
 "use client"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_HOST || "http://localhost:3000/api"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 const API_TIMEOUT_MS = 10000 // 10 seconds
 
 // ---------------- TOKEN MANAGEMENT ----------------
