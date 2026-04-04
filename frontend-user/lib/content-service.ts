@@ -76,15 +76,16 @@ export function resolveImageUrl(item: DbFilm | DbTestimonial | any): string {
   if (!url) return "/placeholder.svg"
   
   let finalUrl = url
+  
+  // Si l'URL n'est pas déjà absolue (ne commence pas par http)
   if (!url.startsWith("http")) {
-    const backendBase = API_URL.replace("/api", "")
-    // Si c'est un chemin local uploadé (contient /uploads/)
-    if (url.includes("/uploads/")) {
-      finalUrl = `${backendBase}${url}`
-    } else {
-      // Ancienne image statique du frontend
-      finalUrl = url
-    }
+    // Nettoyer l'URL de l'API pour avoir la base (ex: https://api.xxx.com)
+    const backendBase = API_URL.split("/api")[0]
+    
+    // Nettoyer le chemin de l'image (enlever le ./ au début si présent)
+    const cleanUrl = url.replace(/^\.\//, "/").replace(/^\/+/, "/")
+    
+    finalUrl = `${backendBase}/${cleanUrl}`.replace(/([^:]\/)\/+/g, "$1")
   }
 
   // Cache busting
