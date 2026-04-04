@@ -72,7 +72,7 @@ server {
     }
 }
 
-# SITE ADMIN
+# SITE ADMIN - Port 3001
 server {
     listen 80;
     server_name $ADMIN_DOMAIN;
@@ -84,8 +84,17 @@ server {
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection \$connection_upgrade;
         proxy_set_header Host \$host;
-        
+
         add_header Content-Type "text/html; charset=utf-8";
+    }
+
+    # Optimisation des assets Next.js pour l'Admin
+    location /_next/static {
+        alias $PROJECT_ROOT/frontend-admin/.next/static;
+        expires 365d;
+        access_log off;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header Access-Control-Allow-Origin *;
     }
 }
 
