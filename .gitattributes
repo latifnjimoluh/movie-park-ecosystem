@@ -1,0 +1,4 @@
+# Créer le fichier .gitattributes
+echo "* text=auto eol=lf" > .gitattributes
+echo "*.ts text eol=lf" >> .gitattributes
+echo "*.tsx text eol=lf" >> .gitattributes

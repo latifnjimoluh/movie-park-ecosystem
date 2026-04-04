@@ -84,10 +84,7 @@ server {
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection \$connection_upgrade;
         proxy_set_header Host \$host;
-
-        add_header Content-Type "text/html; charset=utf-8";
     }
-
     # Optimisation des assets Next.js pour l'Admin
     location /_next/static {
         alias $PROJECT_ROOT/frontend-admin/.next/static;

@@ -18,10 +18,8 @@ const nextConfig = {
       {
         source: "/(.*)",
         headers: [
-          {
-            key: "Content-Type",
-            value: "text/html; charset=utf-8",
-          },
+          // Ne pas forcer Content-Type ici : ça écraserait le MIME type
+          // des fichiers JS/CSS servis par /_next/static et briserait le chargement
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
